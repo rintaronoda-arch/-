@@ -1,3 +1,6 @@
-streamlit pandas numpy altair
+streamlit
+pandas
+numpy
+altair
 
 
