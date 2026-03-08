@@ -9,7 +9,7 @@ import altair as alt
 st.set_page_config(page_title="事業計画・収支シミュレーター", layout="wide")
 st.title("📊 事業計画・収支シミュレーター")
 st.markdown("""
-全項目を網羅したPLシミュレーション。設定した**目標利益率**を達成するための「値上げ幅」や「コスト削減額」を自動算出します。
+全項目を網羅したPLシミュレーション。**営業利益率20%** を達成するための「値上げ幅」や「コスト削減額」を自動算出します。
 """)
 
 # ---------------------------------------------------------
@@ -17,14 +17,8 @@ st.markdown("""
 # ---------------------------------------------------------
 st.sidebar.header("📝 シミュレーション条件")
 
-# --- ★追加機能：目標設定 ---
-with st.sidebar.expander("0. 目標設定 (Target)", expanded=True):
-    # ここで利益率を自由に設定できるようにしました
-    target_rate_percent = st.slider("🎯 目標とする営業利益率 (%)", min_value=1, max_value=50, value=20, step=1)
-    target_rate = target_rate_percent / 100
-
 # --- A. 売上・マーケティング ---
-with st.sidebar.expander("1. 売上・マーケティング (集客)", expanded=False):
+with st.sidebar.expander("1. 売上・マーケティング (集客)", expanded=True):
     st.info("💡 広告費は「投資」として変動費とは分けて計算します")
     unit_price = st.number_input("平均客単価 (円)", value=5000, step=500)
     
@@ -37,7 +31,7 @@ with st.sidebar.expander("1. 売上・マーケティング (集客)", expanded=
     organic_growth = st.slider("自然流入の月次成長率 (%)", 100.0, 120.0, 105.0, 0.1) / 100
 
 # --- B. 変動費 (売上原価・配送・決済) ---
-with st.sidebar.expander("2. 変動費 (売上に比例するコスト)", expanded=False):
+with st.sidebar.expander("2. 変動費 (売上に比例するコスト)", expanded=True):
     st.info("💡 売上1件ごとに必ずかかる費用")
     # 原価・物流
     vc_cogs = st.number_input("仕入原価/製造原価 (円)", value=1000, step=100)
@@ -50,7 +44,7 @@ with st.sidebar.expander("2. 変動費 (売上に比例するコスト)", expand
     vc_platform_fee = st.number_input("モール手数料/ロイヤリティ (%)", value=0.0, step=0.1) / 100
 
 # --- C. 固定費 (人件費・家賃・SaaS等) ---
-with st.sidebar.expander("3. 固定費 (売上に関わらずかかる費用)", expanded=False):
+with st.sidebar.expander("3. 固定費 (売上に関わらずかかる費用)", expanded=True):
     st.info("💡 全て「月額」で入力してください")
     
     st.caption("🏢 組織・人件費")
@@ -121,9 +115,9 @@ df = pd.DataFrame(data)
 last = df.iloc[-1]
 
 # ---------------------------------------------------------
-# 4. 分析ロジック (目標利益率への提案)
+# 4. 分析ロジック (利益率20%への提案)
 # ---------------------------------------------------------
-# target_rate はサイドバーの設定値を使用
+target_rate = 0.20
 current_sales = last['売上高']
 current_profit = last['営業利益']
 current_rate = current_profit / current_sales if current_sales > 0 else 0
@@ -140,11 +134,11 @@ k3.metric("損益分岐点売上", f"¥{last['損益分岐点売上']:,.0f}")
 k4.metric("月間販売数", f"{last['販売数']:,} 件")
 
 # 利益率アドバイス
-st.subheader(f"🎯 営業利益率 {target_rate_percent}% 達成シミュレーション")
+st.subheader("🎯 営業利益率 20% 達成シミュレーション")
 if current_rate >= target_rate:
-    st.success(f"素晴らしいです！現在の利益率は **{current_rate*100:.1f}%** で、目標({target_rate_percent}%)をクリアしています。")
+    st.success(f"素晴らしいです！現在の利益率は **{current_rate*100:.1f}%** で、目標(20%)をクリアしています。")
 else:
-    st.warning(f"現在の利益率は **{current_rate*100:.1f}%** です。目標の {target_rate_percent}% にするには、月間利益があと **¥{gap_profit:,.0f}** 必要です。")
+    st.warning(f"現在の利益率は **{current_rate*100:.1f}%** です。20%にするには、月間利益があと **¥{gap_profit:,.0f}** 必要です。")
     c1, c2, c3 = st.columns(3)
     
     # 値上げ提案
