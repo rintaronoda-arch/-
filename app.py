@@ -8,7 +8,7 @@ import io
 # PAGE CONFIG
 # ─────────────────────────────────────────────
 st.set_page_config(
-    page_title="BizCo — ビジネス共創プラットフォーム",
+    page_title="Biz Maker — ビジネス共創プラットフォーム",
     layout="wide",
     page_icon="🚀",
     initial_sidebar_state="collapsed",
@@ -35,9 +35,9 @@ st.markdown("""
     padding: 0.6rem 0; margin-bottom: 1rem;
     border-bottom: 2px solid #E8ECF0;
   }
-  .top-nav .logo { font-size: 1.3rem; font-weight: 700; color: #1A1A2E; letter-spacing: -0.5px; }
+  .top-nav .logo { font-size: 2.0rem; font-weight: 700; color: #1A1A2E; letter-spacing: -0.5px; }
   .top-nav .logo span { color: #2196F3; }
-  .top-nav .tagline { font-size: 0.78rem; color: #8A94A6; margin-top: 1px; }
+  .top-nav .tagline { font-size: 0.85rem; color: #8A94A6; margin-top: 2px; }
   .nav-badge {
     background: #FFF3CD; color: #856404; border-radius: 20px;
     padding: 2px 10px; font-size: 0.7rem; font-weight: 600; border: 1px solid #FFECB5;
@@ -231,7 +231,7 @@ for key, val in [("step", 1), ("industry", "SaaS / サブスク")]:
 st.markdown("""
 <div class="top-nav">
   <div>
-    <div class="logo">Biz<span>Co</span></div>
+    <div class="logo">Biz<span>Maker</span></div>
     <div class="tagline">ビジネス共創プラットフォーム</div>
   </div>
   <div><span class="nav-badge">Phase 1 Preview</span></div>
@@ -278,7 +278,7 @@ with tab_sim:
     with st.expander("Step 1 — 基本情報", expanded=(st.session_state.step == 1)):
         c1, c2, c3 = st.columns(3)
         with c1:
-            sim_months = st.selectbox("シミュレーション期間", [12, 24, 36, 60], index=2)
+            sim_months = st.selectbox("シミュレーション期間", [12, 24, 36, 60, 84, 120], index=2)
         with c2:
             target_pct = st.slider("目標営業利益率 (%)", 1, 50, 20)
             target_rate = target_pct / 100
@@ -440,6 +440,67 @@ with tab_sim:
     ltv        = unit_price / churn_rate if churn_rate > 0 else 999_999
     ltv_cac    = ltv / cpa if cpa > 0 else 999
 
+    # ─── ユニットエコノミクス ───
+    st.markdown('<div class="section-title">ユニットエコノミクス</div>', unsafe_allow_html=True)
+    vc_per_unit = vc_cogs + vc_ship + vc_srv + unit_price * (vc_pay + vc_plat)
+    margin_per_unit = unit_price - vc_per_unit
+    margin_pct = margin_per_unit / unit_price * 100 if unit_price > 0 else 0
+    ltv_val = unit_price / churn_rate if churn_rate > 0 else unit_price * 120
+    cac_val = cpa
+    ltv_cac_ratio = ltv_val / cac_val if cac_val > 0 else 999
+    payback = cac_val / margin_per_unit if margin_per_unit > 0 else 999
+    avg_life = 1 / churn_rate if churn_rate > 0 else 120
+
+    ue_html = '<div class="kpi-grid">'
+    ue_html += f"""<div class="kpi-card accent">
+      <div class="label">客単価 (ARPU)</div><div class="value">¥{unit_price:,}</div>
+      <div class="delta neutral">1取引あたり</div></div>"""
+    ue_html += f"""<div class="kpi-card {'success' if margin_pct > 50 else 'warn'}">
+      <div class="label">限界利益 / 件</div><div class="value">¥{margin_per_unit:,.0f}</div>
+      <div class="delta {'up' if margin_pct > 50 else 'down'}">利益率 {margin_pct:.1f}%</div></div>"""
+    ue_html += f"""<div class="kpi-card accent">
+      <div class="label">LTV (顧客生涯価値)</div><div class="value">¥{ltv_val:,.0f}</div>
+      <div class="delta neutral">平均 {avg_life:.1f}ヶ月</div></div>"""
+    ue_html += f"""<div class="kpi-card {'success' if cac_val < ltv_val / 3 else 'danger'}">
+      <div class="label">CAC (獲得単価)</div><div class="value">¥{cac_val:,}</div>
+      <div class="delta {'up' if cac_val < ltv_val / 3 else 'down'}">CPA = ¥{cpa:,}</div></div>"""
+    ue_html += f"""<div class="kpi-card {'success' if ltv_cac_ratio >= 3 else 'danger'}">
+      <div class="label">LTV / CAC</div><div class="value">{ltv_cac_ratio:.1f}x</div>
+      <div class="delta {'up' if ltv_cac_ratio >= 3 else 'down'}">{'✓ 健全 (3x以上)' if ltv_cac_ratio >= 3 else '▽ 改善が必要 (3x未満)'}</div></div>"""
+    ue_html += f"""<div class="kpi-card {'success' if payback < 12 else 'warn'}">
+      <div class="label">ペイバック期間</div><div class="value">{payback:.1f}ヶ月</div>
+      <div class="delta {'up' if payback < 12 else 'down'}">{'✓ 12ヶ月以内' if payback < 12 else '▽ 12ヶ月超'}</div></div>"""
+    ue_html += "</div>"
+    st.markdown(ue_html, unsafe_allow_html=True)
+
+    # ユニットエコノミクス詳細
+    with st.expander("ユニットエコノミクス詳細を表示"):
+        ue_c1, ue_c2 = st.columns(2)
+        with ue_c1:
+            st.markdown("**収益構造（1顧客あたり）**")
+            ue_items = {
+                "売上単価": unit_price,
+                "仕入原価": -vc_cogs,
+                "配送料": -vc_ship,
+                "サーバー原価": -vc_srv,
+                "決済手数料": -int(unit_price * vc_pay),
+                "モール手数料": -int(unit_price * vc_plat),
+                "**限界利益**": margin_per_unit,
+            }
+            ue_df = pd.DataFrame({"項目": ue_items.keys(), "金額 (円)": ue_items.values()})
+            st.dataframe(ue_df, hide_index=True, use_container_width=True)
+        with ue_c2:
+            st.markdown("**判定基準**")
+            checks = [
+                ("LTV / CAC ≥ 3.0", ltv_cac_ratio >= 3, f"{ltv_cac_ratio:.1f}x"),
+                ("ペイバック ≤ 12ヶ月", payback <= 12, f"{payback:.1f}ヶ月"),
+                ("限界利益率 ≥ 50%", margin_pct >= 50, f"{margin_pct:.1f}%"),
+                ("解約率 ≤ 5%", churn_rate * 100 <= 5, f"{churn_rate*100:.1f}%"),
+            ]
+            for label, ok, val in checks:
+                icon = "✅" if ok else "⚠️"
+                st.markdown(f"{icon} **{label}** → 現在: {val}")
+
     # ─── KPI CARDS ───
     st.markdown('<div class="section-title">KPI ダッシュボード</div>', unsafe_allow_html=True)
 
@@ -473,7 +534,7 @@ with tab_sim:
     # ─── 改善提案 ───
     st.markdown('<div class="section-title">目標達成シミュレーション</div>', unsafe_allow_html=True)
     if profit_ok:
-        st.success(f"目標の {target_pct}% を達成しています（現在 {cur_rate*100:.1f}%）")
+        st.success(f"目標 {target_pct}% を達成しています（現在 {cur_rate*100:.1f}%）")
     else:
         st.warning(f"目標 {target_pct}% まで あと ¥{gap:,.0f}/月 必要です")
         ac1, ac2, ac3, ac4 = st.columns(4)
@@ -507,10 +568,35 @@ with tab_sim:
 
     # ─── グラフ ───
     st.markdown('<div class="section-title">グラフ分析</div>', unsafe_allow_html=True)
+
+    # 月/年 切り替え
+    graph_col1, graph_col2 = st.columns([3, 1])
+    with graph_col2:
+        view_mode = st.radio("表示単$��", ["月単位", "年単$��"], horizontal=True, key="view_mode")
+
+    if view_mode == "年単$��":
+        # 年単位に集約
+        df["年"] = ((df["月番号"] - 1) // 12) + 1
+        df_yearly = df.groupby("年").agg({
+            "売上高": "sum", "変動費": "sum", "限界利益": "sum",
+            "広告宣伝費": "sum", "固定費合計": "sum", "営業利益": "sum",
+            "累積利益": "last", "損益分岐点売上": "mean",
+            "キャッシュ残高": "last", "新規獲得": "sum", "解約数": "sum",
+            "アクティブ顧客数": "last", "販売数": "sum",
+            "費用_変動費": "sum", "費用_広告宣伝費": "sum", "費用_固定費": "sum",
+        }).reset_index()
+        df_yearly["月"] = df_yearly["年"].apply(lambda y: f"{y}年目")
+        df_yearly["月番号"] = df_yearly["年"]
+        df_view = df_yearly
+        x_title = "年"
+    else:
+        df_view = df
+        x_title = "月"
+
     g1, g2, g3, g4, g5, g6 = st.tabs(["収支推移","キャッシュフロー","シナリオ比較","コスト構造","顧客推移","データ表"])
 
     with g1:
-        base = alt.Chart(df).encode(x=alt.X("月番号:Q",title="月"))
+        base = alt.Chart(df_view).encode(x=alt.X("月番号:Q",title=x_title))
         ls = base.mark_line(color="#2196F3",strokeWidth=2.5).encode(y="売上高:Q",tooltip=["月","売上高"])
         lb = base.mark_line(color="#94A3B8",strokeDash=[4,4]).encode(y="損益分岐点売上:Q")
         ap = base.mark_area(opacity=0.25).encode(y="営業利益:Q",
@@ -518,8 +604,8 @@ with tab_sim:
         st.altair_chart((ap+ls+lb).interactive(),use_container_width=True)
 
     with g2:
-        cf = alt.Chart(df).mark_area(opacity=0.5).encode(
-            x=alt.X("月番号:Q",title="月"),y="キャッシュ残高:Q",
+        cf = alt.Chart(df_view).mark_area(opacity=0.5).encode(
+            x=alt.X("月番号:Q",title=x_title),y="キャッシュ残高:Q",
             color=alt.condition(alt.datum.キャッシュ残高>0,alt.value("#2196F3"),alt.value("#DC2626")),
             tooltip=["月","キャッシュ残高"])
         st.altair_chart((cf+alt.Chart(pd.DataFrame({"y":[0]})).mark_rule(color="#DC2626",strokeDash=[3,3]).encode(y="y:Q")).interactive(),use_container_width=True)
@@ -546,7 +632,7 @@ with tab_sim:
         st.altair_chart(sc_ch.interactive(),use_container_width=True)
 
     with g4:
-        cd = df.melt(id_vars=["月"],value_vars=["費用_変動費","費用_広告宣伝費","費用_固定費"],var_name="費用種別",value_name="金額")
+        cd = df_view.melt(id_vars=["月"],value_vars=["費用_変動費","費用_広告宣伝費","費用_固定費"],var_name="費用種別",value_name="金額")
         st.altair_chart(alt.Chart(cd).mark_area().encode(
             x=alt.X("月:N",sort=None),y="金額:Q",
             color=alt.Color("費用種別:N",scale=alt.Scale(range=["#F59E0B","#EF4444","#6366F1"])),
@@ -554,14 +640,14 @@ with tab_sim:
 
     with g5:
         if use_churn:
-            cb = alt.Chart(df).encode(x=alt.X("月番号:Q",title="月"))
+            cb = alt.Chart(df_view).encode(x=alt.X("月番号:Q",title=x_title))
             st.altair_chart((cb.mark_bar(color="#BBF7D0",opacity=0.7).encode(y="新規獲得:Q")+
                              cb.mark_line(color="#2196F3",strokeWidth=2.5).encode(y="アクティブ顧客数:Q")).interactive(),use_container_width=True)
         else:
             st.info("解約率をONにすると顧客推移グラフが表示されます")
 
     with g6:
-        st.dataframe(df,use_container_width=True)
+        st.dataframe(df_view,use_container_width=True)
 
     # ─── エクスポート ───
     st.markdown('<div class="section-title">データエクスポート</div>', unsafe_allow_html=True)
@@ -595,16 +681,16 @@ with tab_ai:
     st.markdown("""
     <div style="max-width:680px; margin-top:8px;">
       <div class="ai-bubble">
-        <div class="ai-label">BizCo AI · 分析結果</div>
+        <div class="ai-label">Biz Maker AI · 分析結果</div>
         入力された事業計画を分析しました。以下が主な所見です。<br><br>
         <strong>1. キャッシュフロー警告</strong><br>
-        現在の入金サイクルと支払サイクルのズレにより、4〜6ヶ月目にキャッシュがタイトになる可能性があります。
-        運転資金として 300〜500万円の予備を確保することを推奨します。<br><br>
+        現在の入金サイクルと支払サイクルのズルにより、4〜6ヶ月目にキャッシュがタイトになる可能性があります。
+        運転資金として�300〜500万円の予備を確保することを推奨します。<br><br>
         <strong>2. LTV / CAC 比率</strong><br>
         現在の比率は 2.4x で、業界健全ラインの 3.0x を下回っています。
         解約率を 1〜2% 改善するだけで比率が 3.6x まで改善し、収益性が大幅に向上します。<br><br>
         <strong>3. 季節変動リスク</strong><br>
-        SaaS業種の場合、7〜8月に売上が約 5% 低下する傾向があります。
+        SaaS業種の場合、7〜8月に売上が約 5% 䋎下する傾向があります。
         この時期に合わせた年次契約プランの提供を検討してみてください。
       </div>
     </div>
@@ -644,7 +730,7 @@ with tab_ai:
       </div>
       <div style="clear:both; margin-top:8px;">
         <div class="ai-bubble" style="max-width:90%;">
-          <div class="ai-label">BizCo AI</div>
+          <div class="ai-label">Biz Maker AI</div>
           解約率改善には主に3つのアプローチが効果的です：<br>
           ① オンボーディングの強化（最初の30日が鍵）<br>
           ② プロダクト内での価値提供の可視化（ダッシュボード等）<br>
@@ -667,7 +753,7 @@ with tab_cons:
     """, unsafe_allow_html=True)
 
     st.markdown("#### 専門家マッチング")
-    st.caption("あなたの事業フェーズと課題に合った専門家を見つけて、直接相談できます。")
+    st.caption("うなたの事業フェーズと課題に合った専門家を見つけて、直接相談できます。")
 
     # フィルター
     fc1, fc2, fc3, fc4 = st.columns(4)
@@ -676,44 +762,40 @@ with tab_cons:
     with fc2:
         st.selectbox("料金帯", ["すべて","〜5,000円/30分","5,000〜10,000円","10,000円〜"])
     with fc3:
-        st.selectbox("評価", ["すべて","★ 4.5以上","★ 4.0以上"])
-    with fc4:
-        st.selectbox("対応形式", ["すべて","オンライン","対面","電話"])
-
-    st.markdown("---")
-
-    # コンサルタントカード
-    consultants = [
-        {
-            "initials": "TT",
-            "name": "田中 太郎",
-            "field": "財務・会計",
-            "desc": "公認会計士。スタートアップの資金調達・事業計画策定を 200社以上支援。元BigFour出身。SaaSビジネスの財務モデル設計が専門。",
-            "rating": "4.9",
-            "reviews": 128,
-            "price": "¥8,000 / 30分",
-            "badge": "あなたの事業計画にマッチ",
-            "tags": ["財務モデル", "資金調達", "SaaS"],
-        },
-        {
-            "initials": "HK",
-            "name": "鈴木 花子",
-            "field": "マーケティング",
-            "desc": "元Google。D2C・SaaSのグロースマーケティングを専門とし、CPA改善・LTV向上の実績多数。コンテンツSEOからPaid Socialまで幅広く対応。",
-            "rating": "4.8",
-            "reviews": 94,
-            "price": "¥10,000 / 30分",
-            "badge": "CPA改善の実績多数",
-            "tags": ["グロース", "SEO", "広告運用"],
-        },
-        {
-            "initials": "IY",
-            "name": "山田 一郎",
-            "field": "法務",
-            "desc": "弁護士。スタートアップの法務全般（利用規約・プライバシーポリシー・契約書作成）からIPO準備まで一気通貫で対応。初回30分無料。",
-            "rating": "4.6",
-            "reviews": 67,
-            "price": "¥12,000 / 30分",
+        st.selectbox("評価", ["すべて","★ 4.5以上","9★ 4.0��(�t�(����ݥѠ�����(���������й͕���щ�ࠋ�����s�����<���l��g�������
+��ώ��
+��̈������v�����nĉt�((�����й��ɭ��ݸ�������((�������
+ώώ
+׎��
+��ώ#�
+���$(��������ձх��̀�l(���������(����������������ѥ��̈耉QP��(������������������耋�RÒⴃ����8��(�������������������耋�ʇ�.g���k�� ��(���������������͌�耋����7��k��#�����
+�
+���#�
+��_�����G����S���/�����#�R[��k�
+H���Þ����+�R��>ӎ�
+	����˖�ꯎ	M��O�O�
+�7�
+���ʇ�.g������⢷��#�3���Z���(�������������Ʌѥ���耈и䈰(�������������ɕ٥��̈����(��������������ɥ���耋
+���������Ö"��(�������������������耋��������/�����#�R���{����(�������������х�̈�l��ʇ�.g������������G��W�������M��L�t�(����������(���������(����������������ѥ��̈耉!,��(������������������耋�"Ӛr��"��V�@��(�������������������耋�:{��
+ǎ�
+��ώ
+���(���������������͌�耋�
+������%��M��O���
+Î���
+�{��
+�ѣ��ングを専門とし、CPA改善・LTV㔑上の実績多数。コンをTEOは���Paid Socialまで幅遫く�����s���(�������������Ʌѥ���耈и���(�������������ɕ٥��̈��а(��������������ɥ���耋
+�����������Ö"��(�������������������耉
+AO�VÎ��������k�V���(�������������х�̈�l��
+Î���
+䈰��M<�������F+�/�R��t�(����������(���������(����������������ѥ��̈耉%d��(������������������耋��ǞRÀ�*҃��8��(�������������������耋��W�.d��(���������������͌�耋����ߖ�ˎ�
+�
+���#�
+���_����W�.g���"���#�"��R��������_���
+��C�
+ߎ�w���
+ߎ�G�Z�n��s�&C��'�/�%%A?��[�
+g������3���Ư�������s��"{��x�Ö"���Zg���(�������������Ʌѥ���耈и؈�(�������������ɕ٥��̈��ܰ(��������������ɥ���耋
+��Ȃ000 / 30分",
             "badge": "初回無料相談あり",
             "tags": ["契約書", "IPO", "規約作成"],
         },
@@ -762,7 +844,7 @@ with tab_sns:
 
     # 新規投稿フォーム
     with st.expander("投稿を作成する", expanded=False):
-        post_txt = st.text_area("内容", placeholder="事業計画について相談したいこと、学んだことをシェアしましょう…", height=100)
+        post_txt = st.text_area("内容", placeholder="事業計画につうて相談したあこと、学んだことをシェアしましょう…", height=100)
         tag_opts = st.multiselect("タグ", ["#SaaS","#EC","#飲食","#コンサル","#資金調達","#マーケ","#解約率改善","#初期顧客獲得"])
         if st.button("投稿する", key="post_btn"):
             st.info("Phase 2 で実装予定です。")
@@ -785,7 +867,7 @@ with tab_sns:
             "initials": "KT",
             "name": "高橋 健太",
             "sub": "飲食店 · 2店舗運営",
-            "content": "このシミュレーターで12月の季節変動を入れてシミュレーションしてみたら、固定費の比率が高すぎることに気づきました。業務委託の比率を見直して月30万円のコスト改善ができそうです。",
+            "content": "このシミュレーターでL2月の季節変動を入れてシミュレーションしてみせら、固定費の比率が高すぎることに気づきましせ。業務委託の比率を見直して月30万円のコスト改善ができそうです。",
             "tags": ["#飲食", "#固定費削減"],
             "likes": 22,
             "comments": 9,
@@ -831,6 +913,6 @@ with tab_sns:
 # ─── フッター ───
 st.markdown("""
 <div style="margin-top:3rem;padding-top:1rem;border-top:1px solid #E8ECF0;text-align:center;color:#9CA3AF;font-size:0.75rem;">
-  BizCo — ビジネス共創プラットフォーム &nbsp;|&nbsp; Phase 1 Preview &nbsp;|&nbsp; Powered by Streamlit
+  Biz Maker — ビジネス共創プラットフォーム v3.1 &nbsp;|&nbsp; Phase 1 Preview &nbsp;|&nbsp; Powered by Streamlit
 </div>
 """, unsafe_allow_html=True)
