@@ -331,12 +331,12 @@ with tab_sim:
             vc_plat    = st.number_input("モール手数料 (%)", value=tmpl["vc_platform_fee"], step=0.1) / 100
         with s3b:
             st.caption("固定費（月額）")
-            fc_sal  = st.number_input("給与合計", value=tmpl["fc_salary"], step=100_000)
-            fc_ins  = st.number_input("社会保険料", value=tmpl["fc_insurance"], step=50_000)
-            fc_out  = st.number_input("業務委託費", value=tmpl["fc_outsourcing"], step=50_000)
-            fc_rent = st.number_input("家賃", value=tmpl["fc_rent"], step=10_000)
-            fc_sys  = st.number_input("システム利用料", value=tmpl["fc_system"], step=5_000)
-            fc_misc = st.number_input("その他固定費", value=tmpl["fc_misc"], step=10_000)
+            fc_sal  = st.number_input("給与合計 (円)", value=tmpl["fc_salary"], step=100_000)
+            fc_ins  = st.number_input("社会保険料 (円)", value=tmpl["fc_insurance"], step=50_000)
+            fc_out  = st.number_input("業務委託費 (円)", value=tmpl["fc_outsourcing"], step=50_000)
+            fc_rent = st.number_input("家賃 (円)", value=tmpl["fc_rent"], step=10_000)
+            fc_sys  = st.number_input("システム利用料 (円)", value=tmpl["fc_system"], step=5_000)
+            fc_misc = st.number_input("その他固定費 (円)", value=tmpl["fc_misc"], step=10_000)
         total_fixed = fc_sal + fc_ins + fc_out + fc_rent + fc_sys + fc_misc
 
         bc3, _, nc3 = st.columns([1, 7, 1])
@@ -597,17 +597,17 @@ with tab_sim:
 
     with g1:
         base = alt.Chart(df_view).encode(x=alt.X("月番号:Q",title=x_title))
-        ls = base.mark_line(color="#2196F3",strokeWidth=2.5).encode(y="売上高:Q",tooltip=["月","売上高"])
-        lb = base.mark_line(color="#94A3B8",strokeDash=[4,4]).encode(y="損益分岐点売上:Q")
-        ap = base.mark_area(opacity=0.25).encode(y="営業利益:Q",
+        ls = base.mark_line(color="#2196F3",strokeWidth=2.5).encode(y=alt.Y("売上高:Q",axis=alt.Axis(format="~s",title="¥ 売上高")),tooltip=["月",alt.Tooltip("売上高:Q",format=",")])
+        lb = base.mark_line(color="#94A3B8",strokeDash=[4,4]).encode(y=alt.Y("損益分岐点売上:Q",axis=alt.Axis(format="~s")))
+        ap = base.mark_area(opacity=0.25).encode(y=alt.Y("営業利益:Q",axis=alt.Axis(format="~s")),
              color=alt.condition(alt.datum.営業利益>0,alt.value("#16A34A"),alt.value("#DC2626")))
         st.altair_chart((ap+ls+lb).interactive(),use_container_width=True)
 
     with g2:
         cf = alt.Chart(df_view).mark_area(opacity=0.5).encode(
-            x=alt.X("月番号:Q",title=x_title),y="キャッシュ残高:Q",
+            x=alt.X("月番号:Q",title=x_title),y=alt.Y("キャッシュ残高:Q",axis=alt.Axis(format="~s",title="¥ キャッシュ残高")),
             color=alt.condition(alt.datum.キャッシュ残高>0,alt.value("#2196F3"),alt.value("#DC2626")),
-            tooltip=["月","キャッシュ残高"])
+            tooltip=["月",alt.Tooltip("キャッシュ残高:Q",format=",")])
         st.altair_chart((cf+alt.Chart(pd.DataFrame({"y":[0]})).mark_rule(color="#DC2626",strokeDash=[3,3]).encode(y="y:Q")).interactive(),use_container_width=True)
 
     with g3:
@@ -626,23 +626,23 @@ with tab_sim:
             return pd.DataFrame(r)
         df_all = pd.concat([sc(1.2,0.9,"楽観"),sc(1.0,1.0,"中庸"),sc(0.8,1.1,"悲観")])
         sc_ch = alt.Chart(df_all).mark_line(strokeWidth=2).encode(
-            x="月番号:Q",y="累積利益:Q",
+            x="月番号:Q",y=alt.Y("累積利益:Q",axis=alt.Axis(format="~s",title="¥ 累積利益")),
             color=alt.Color("シナリオ:N",scale=alt.Scale(range=["#16A34A","#2196F3","#DC2626"])),
-            tooltip=["月番号","シナリオ","累積利益"])
+            tooltip=["月番号","シナリオ",alt.Tooltip("累積利益:Q",format=",")])
         st.altair_chart(sc_ch.interactive(),use_container_width=True)
 
     with g4:
         cd = df_view.melt(id_vars=["月"],value_vars=["費用_変動費","費用_広告宣伝費","費用_固定費"],var_name="費用種別",value_name="金額")
         st.altair_chart(alt.Chart(cd).mark_area().encode(
-            x=alt.X("月:N",sort=None),y="金額:Q",
+            x=alt.X("月:N",sort=None),y=alt.Y("金額:Q",axis=alt.Axis(format="~s",title="¥ 金額")),
             color=alt.Color("費用種別:N",scale=alt.Scale(range=["#F59E0B","#EF4444","#6366F1"])),
-            tooltip=["月","費用種別","金額"]),use_container_width=True)
+            tooltip=["月","費用種別",alt.Tooltip("金額:Q",format=",")]),use_container_width=True)
 
     with g5:
         if use_churn:
             cb = alt.Chart(df_view).encode(x=alt.X("月番号:Q",title=x_title))
-            st.altair_chart((cb.mark_bar(color="#BBF7D0",opacity=0.7).encode(y="新規獲得:Q")+
-                             cb.mark_line(color="#2196F3",strokeWidth=2.5).encode(y="アクティブ顧客数:Q")).interactive(),use_container_width=True)
+            st.altair_chart((cb.mark_bar(color="#BBF7D0",opacity=0.7).encode(y=alt.Y("新規獲得:Q",axis=alt.Axis(format=",",title="人数")))+
+                             cb.mark_line(color="#2196F3",strokeWidth=2.5).encode(y=alt.Y("アクティブ顧客数:Q",axis=alt.Axis(format=",")))).interactive(),use_container_width=True)
         else:
             st.info("解約率をONにすると顧客推移グラフが表示されます")
 
