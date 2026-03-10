@@ -519,7 +519,7 @@ with tab_sim:
     kpi_html = '<div class="kpi-grid">'
     kpi_html += kpi("月商", f"¥{cur_sales:,.0f}", f"瞮標利益'�y{target_pct}%", "neutral", "accent")
     kpi_html += kpi("営業利益", f"¥{cur_profit:,.0f}",
-                    f"利益率 cur_rate*100:.1f}% {'✐達成' if profit_ok else '▽未達'}",
+                    f"利益率 {cur_rate*100:.1f}% {'✓達成' if profit_ok else '▽未達'}",
                     "up" if profit_ok else "down", "success" if profit_ok else "danger")
     kpi_html += kpi("LTV / CAC", f"{ltv_cac:.1f}x", "3x以上が健全",
                     "up" if ltv_ok else "down", "success" if ltv_ok else "warn")
