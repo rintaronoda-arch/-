@@ -154,6 +154,41 @@ st.markdown("""
     border-radius: 8px; font-weight: 500; font-size: 0.85rem;
     padding: 6px 14px; transition: all 0.2s;
   }
+
+/* -- Tab Orange Button Style -- */
+div[data-testid="stTabs"] [data-baseweb="tab-list"] {
+    gap: 14px; border-bottom: none !important;
+    background: transparent; padding: 10px 0;
+}
+div[data-testid="stTabs"] [data-baseweb="tab"] {
+    background: linear-gradient(180deg, #F97316 0%, #EA580C 100%);
+    color: #fff !important; border-radius: 50px;
+    padding: 14px 32px; font-weight: 700; font-size: 0.95rem;
+    border: none !important; letter-spacing: 0.5px;
+    box-shadow: 0 4px 14px rgba(234,88,12,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+    transition: all 0.25s ease; text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    cursor: pointer; position: relative; overflow: hidden;
+}
+div[data-testid="stTabs"] [data-baseweb="tab"]::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+    border-radius: 50px; pointer-events: none;
+}
+div[data-testid="stTabs"] [data-baseweb="tab"]:hover {
+    background: linear-gradient(180deg, #FB923C 0%, #F97316 100%);
+    box-shadow: 0 6px 22px rgba(249,115,22,0.45);
+    transform: translateY(-2px);
+}
+div[data-testid="stTabs"] [data-baseweb="tab"][aria-selected="true"] {
+    background: linear-gradient(180deg, #EA580C 0%, #C2410C 100%) !important;
+    box-shadow: 0 2px 8px rgba(194,65,12,0.4), inset 0 2px 4px rgba(0,0,0,0.15) !important;
+    transform: translateY(1px);
+}
+div[data-testid="stTabs"] [data-baseweb="tab-highlight"],
+div[data-testid="stTabs"] [data-baseweb="tab-border"] {
+    display: none !important;
+}
+div[data-testid="stTabs"] [data-baseweb="tab"] > div { color: #fff !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -214,6 +249,15 @@ INDUSTRY_TEMPLATES = {
         "fc_salary": 4_000_000, "fc_insurance": 600_000, "fc_outsourcing": 1_000_000,
         "fc_rent": 500_000, "fc_system": 100_000, "fc_misc": 300_000,
         "seasonal": [0.9,0.8,1.0,1.0,1.0,1.0,1.0,0.9,1.0,1.0,1.1,1.3],
+    },
+    "買い切り＋サブスク": {
+        "unit_price": 35_000, "ad_budget": 1_200_000, "cpa": 4000,
+        "organic_start": 20, "organic_growth": 4.0, "churn_rate": 5.0,
+        "vc_cogs": 12_000, "vc_shipping": 1_000, "vc_server": 100,
+        "vc_payment_rate": 3.6, "vc_platform_fee": 0.0,
+        "fc_salary": 3_000_000, "fc_insurance": 450_000, "fc_outsourcing": 500_000,
+        "fc_rent": 200_000, "fc_system": 100_000, "fc_misc": 150_000,
+        "seasonal": [0.9,0.85,1.0,1.0,1.0,1.0,1.0,0.9,1.0,1.05,1.1,1.2],
     },
 }
 MONTH_LABELS = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"]
