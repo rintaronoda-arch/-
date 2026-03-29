@@ -192,8 +192,8 @@ VARIABLE_COST_ITEMS = {
     "æ±ºæ¸ææ°æ":     {"key": "vc_payment",   "unit": "%",     "desc": "ã¯ã¬ã¸ããã«ã¼ãç­ã®æ±ºæ¸ææ°æ"},
     "ã¢ã¼ã«ææ°æ":   {"key": "vc_platform",  "unit": "%",     "desc": "ECã¢ã¼ã«ç­ã®ãã©ãããã©ã¼ã ææ°æ"},
     "å¤æ³¨å å·¥è²»":     {"key": "vc_outsource", "unit": "å/ä»¶", "desc": "å¤é¨ã¸ã®å å·¥ã»å¶ä½å§è¨"},
-    "æ¢±åè³æè²»":     {"key": "vc_packaging", "unit": "å/ä»¶", "desc": "æ¢±åæã»ããã±ã¼ã¸è²»ç¨"},
-    "ã­ã¤ã¤ãªãã£":   {"key": "vc_royalty",   "unit": "%",     "desc": "ã©ã¤ã»ã³ã¹ã»ã­ã¤ã¤ãªãã£è²»ç¨"},
+    "æ¢±åè³æè²»":     {"key": "vc_packaging", "unit": "å/ä»¶", "desc": "æ¢­åæã»ããã±ã¼ã¸è²»ç¨"},
+    "ã­ã¤ã¤ã«ãã£":   {"key": "vc_royalty",   "unit": "%",     "desc": "ã©ã¤ã»ã³ã¹ã»ã­ã¤ã¤ã«ãã£è²»ç¨"},
     "è²©å£²ææ°æ":     {"key": "vc_sales_fee", "unit": "%",     "desc": "è²©å£²ä»£çåºã»ã¢ãã£ãªã¨ã¤ãææ°æ"},
     "è¿åã³ã¹ã":     {"key": "vc_returns",   "unit": "å/ä»¶", "desc": "è¿åã»äº¤æã«ä¼´ãè²»ç¨"},
 }
@@ -211,7 +211,7 @@ FIXED_COST_ITEMS = {
     "ä¿éºæ":         {"key": "fc_business_ins", "desc": "äºæ¥­ä¿éºã»è³ åä¿éºç­"},
     "æ°´éåç±è²»":     {"key": "fc_utilities",    "desc": "é»æ°ã»ã¬ã¹ã»æ°´éæé"},
     "éä¿¡è²»":         {"key": "fc_telecom",      "desc": "é»è©±ã»ã¤ã³ã¿ã¼ãããåç·è²»"},
-    "äº¤éè²»":         {"key": "fc_transport",    "desc": "åºå¼´ã»éå¤äº¤éè²»"},
+    "äº¤éè²»":         {"key": "fc_transport",    "desc": "åºå¼µã»éå¤äº¤éè²»"},
     "é¡§åæ":         {"key": "fc_advisory",     "desc": "ç¨çå£«ã»å¼è­·å£«ç­ã®é¡§åå¥ç´"},
     "æ¡ç¨è²»":         {"key": "fc_recruiting",   "desc": "æ±äººåºåã»äººæç´¹ä»ææ°æ"},
 }
@@ -238,7 +238,7 @@ INDUSTRY_TEMPLATES = {
         "fc_items": {"çµ¦ä¸åè¨": 2_000_000, "ç¤¾ä¼ä¿éºæ": 300_000, "æ¥­åå§è¨è²»": 200_000, "å®¶è³": 200_000, "ã·ã¹ãã å©ç¨æ": 80_000, "ãã®ä»åºå®è²»": 120_000},
         "seasonal": [0.8,0.8,1.0,0.9,0.9,1.0,1.1,0.9,0.9,1.0,1.2,1.5],
     },
-    "é£é£åº": {
+    "é£²é£åº": {
         "unit_price": 1200, "ad_budget": 300_000, "cpa": 500,
         "organic_start": 200, "organic_growth": 2.0, "churn_rate": 25.0,
         "vc_items": {"ä»å¥åä¾¡": 400, "æ±ºæ¸ææ°æ": 3.6, "æ¢±åè³æè²»": 30},
@@ -345,7 +345,7 @@ with tab_sim:
         "Step 4 äººå¡è¨ç»",
         "Step 5 è¨­åæè³",
         "Step 6 è³éç¹°ã",
-        "Step 7 ç¨å¹æ",
+        "Step 7 ç¨åæ",
     ]
     step_html = '<div class="step-bar">'
     for i, sl in enumerate(step_labels, 1):
@@ -846,225 +846,6 @@ with tab_sim:
                         remaining_value = max(a['residual_value'], remaining_value - monthly_depr)
                         dep_schedule.append({
                             "æ": month,
-                            "æé¡½åå´è²»": monthly_depr,
-                            "ç´¯ç©åå´é¡": a['cost'] - remaining_value,
-                            "å¸³ç°¿ä¾¡é¡": remaining_value,
-                        })
-                    dep_sch_df = pd.DataFrame(dep_schedule)
-                    st.altair_chart(
-                        _dk(alt.Chart(dep_sch_df).mark_line().encode(
-                            x=alt.X("æ:Q", title="æ"),
-                            y=alt.Y("å¸³ç°¿ä¾¡é¡:Q", axis=alt.Axis(format="~s", title="Â¥ å¸³ç°¿ä¾¡é¡")),
-                            color=alt.value("#8B5CF6"),
-                            tooltip=["æ", alt.Tooltip("æé¡åå´è²»:Q", format=",.0f"), alt.Tooltip("å¸³ç°¿ä¾¡é¡:Q", format=",.0f")]
-                        ).interactive()),
-                        use_container_width=True
-                    )
-
-        bc5, _, nc5 = st.columns([1, 7, 1])
-        with bc5:
-            if st.button("æ»ã", key="b5"):
-                st.session_state.step = 4; st.rerun()
-        with nc5:
-            if st.button("æ¬¡ã¸", key="n5"):
-                st.session_state.step = 6; st.rerun()
-
-    # âââââââââââââââââââââââââââââââââââââââ
-    # STEP 6 â è³éç¹°ã
-    # âââââââââââââââââââââââââââââââââââââââ
-    with st.expander("Step 6 â è³éç¹°ãï¼ã­ã£ãã·ã¥ãã­ã¼ï¼", expanded=(st.session_state.step == 6)):
-        s6a, s6b = st.columns(2)
-        with s6a:
-            cash_init = st.number_input("æåç¾é (å)", value=10_000_000, step=1_000_000)
-            pay_cyc = st.selectbox("å¥éãµã¤ã¯ã«", ["å½æ", "ç¿æ", "ç¿ãæ"])
-        with s6b:
-            exp_cyc = st.selectbox("æ¯æãµã¤ã¯ã«", ["å½æ", "ç¿æ"])
-            fundraise_alert = st.number_input(
-                "è³éèª¿éã¢ã©ã¼ãæ®é« (å)", value=3_000_000, step=500_000,
-                help="ã­ã£ãã·ã¥æ®é«ããã®éé¡ãä¸åãã¨è­¦åãè¡¨ç¤ºãã¾ã (B4)"
-            )
-        pay_delay = {"å½æ": 0, "ç¿æ": 1, "ç¿ãæ": 2}[pay_cyc]
-        exp_delay = {"å½æ": 0, "ç¿æ": 1}[exp_cyc]
-
-        bc6, _, nc6 = st.columns([1, 7, 1])
-        with bc6:
-            if st.button("æ»ã", key="b6"):
-                st.session_state.step = 5; st.rerun()
-        with nc6:
-            if st.button("æ¬¡ã¸", key="n6"):
-                st.session_state.step = 7; st.rerun()
-
-    # âââââââââââââââââââââââââââââââââââââââ
-    # STEP 7 â ç¨å¹æ (B3)
-    # âââââââââââââââââââââââââââââââââââââââ
-    with st.expander("Step 7 â ç¨å¹æã¢ãã«", expanded=(st.session_state.step == 7)):
-        st.caption("æ³äººç¨ç­ã®å®å¹ç¨çãè¨­å®ããæ¸ä¾¡åå´ã«ããç¨ã·ã¼ã«ãå¹æãå¯è¦åãã¾ãã")
-        tc1, tc2 = st.columns(2)
-                          fc_values[custom_fc_name] = custom_fc_val / annual_divisor
-
-        # åºå®è²»åè¨ãè¨ç®
-        total_fixed = sum(fc_values.values())
-
-        # å¤åè²»ã®åä¾¡ã»çãæ´ç
-        vc_per_unit_fixed = 0  # å/ä»¶ãã¼ã¹ã®å¤åè²»åè¨
-        vc_pct_of_sales = 0    # %ãã¼ã¹ã®å¤åè²»åè¨
-        for item_name, item_data in vc_values.items():
-            if item_data["unit"] == "%":
-                vc_pct_of_sales += item_data["value"] / 100
-            else:
-                vc_per_unit_fixed += item_data["value"]
-
-        bc3, _, nc3 = st.columns([1, 7, 1])
-        with bc3:
-            if st.button("æ»ã", key="b3"):
-                st.session_state.step = 2; st.rerun()
-        with nc3:
-            if st.button("æ¬¡ã¸", key="n3"):
-                st.session_state.step = 4; st.rerun()
-
-    # âââââââââââââââââââââââââââââââââââââââ
-    # STEP 4 â äººå¡è¨ç» (B1)
-    # âââââââââââââââââââââââââââââââââââââââ
-    with st.expander("Step 4 â äººå¡è¨ç»ï¼æ¡ç¨ã¿ã¤ãã³ã°ï¼", expanded=(st.session_state.step == 4)):
-        st.caption("ä½ã¶æç®ã«ä½äººæ¡ç¨ããããè¨­å®ããã¨ãäººä»¶è²»ãã¹ãããé¢æ°ã§åæ ããã¾ãã")
-
-        if "n_hires" not in st.session_state:
-            st.session_state.n_hires = 1
-
-        hire_plan = []
-        for hidx in range(st.session_state.n_hires):
-            hc1, hc2, hc3, hc4 = st.columns(4)
-            with hc1:
-                h_month = st.number_input("æ¡ç¨æ", min_value=1, max_value=120, value=min(1 + hidx * 6, 120), key=f"hire_month_{hidx}")
-            with hc2:
-                h_count = st.number_input("äººæ°", min_value=1, max_value=50, value=1, key=f"hire_count_{hidx}")
-            with hc3:
-                h_salary = st.number_input("æçµ¦ (å/äºº)", value=350_000, step=50_000, key=f"hire_salary_{hidx}")
-            with hc4:
-                h_role = st.text_input("å½¹è·", value="ã¨ã³ã¸ãã¢" if hidx == 0 else "å¶æ¥­", key=f"hire_role_{hidx}")
-            hire_plan.append({"month": h_month, "count": h_count, "salary": h_salary, "role": h_role})
-
-        hcol1, hcol2 = st.columns(2)
-        with hcol1:
-            if st.button("ï¼ æ¡ç¨æ ãè¿½å ", key="add_hire"):
-                st.session_state.n_hires += 1; st.rerun()
-        with hcol2:
-            if st.session_state.n_hires > 1 and st.button("ï¼ æå¾ã®æ ãåé¤", key="del_hire"):
-                st.session_state.n_hires -= 1; st.rerun()
-
-        # äººå¡è¨ç»ãã¬ãã¥ã¼
-        if hire_plan:
-            st.markdown("**äººä»¶è²»ã·ãã¥ã¬ã¼ã·ã§ã³ï¼ãã¬ãã¥ã¼ï¼**")
-            preview_months = min(sim_months if 'sim_months' in dir() else 36, 60)
-            headcount_data = []
-            for m in range(1, preview_months + 1):
-                total_heads = 0
-                total_salary = 0
-                for hp in hire_plan:
-                    if m >= hp["month"]:
-                        total_heads += hp["count"]
-                        total_salary += hp["count"] * hp["salary"]
-                # ç¤¾ä¼ä¿éºæï¼ç´15%ãèªåå ç®ï¼
-                total_cost = total_salary * 1.15
-                headcount_data.append({"æ": m, "äººæ°": total_heads, "äººä»¶è²»ï¼ç¤¾ä¿è¾¼ï¼": total_cost})
-            hc_df = pd.DataFrame(headcount_data)
-            st.altair_chart(
-                _dk(alt.Chart(hc_df).mark_area(opacity=0.4, color="#f5a623").encode(
-                    x=alt.X("æ:Q", title="æ"),
-                    y=alt.Y("äººä»¶è²»ï¼ç¤¾ä¿è¾¼ï¼:Q", axis=alt.Axis(format="~s", title="Â¥ æé¡äººä»¶è²»")),
-                    tooltip=["æ", "äººæ°", alt.Tooltip("äººä»¶è²»ï¼ç¤¾ä¿è¾¼ï¼:Q", format=",")]
-                ).interactive()),
-                use_container_width=True
-            )
-
-        bc4, _, nc4 = st.columns([1, 7, 1])
-        with bc4:
-            if st.button("æ»ã", key="b4"):
-                st.session_state.step = 3; st.rerun()
-        with nc4:
-            if st.button("æ¬¡ã¸", key="n4"):
-                st.session_state.step = 5; st.rerun()
-
-    # âââââââââââââââââââââââââââââââââââââââ
-    # STEP 5 â è¨­åæè³ã»æ¸ä¾¡åå´ (A3 + IMPROVEMENT 2)
-    # âââââââââââââââââââââââââââââââââââââââ
-    with st.expander("Step 5 â è¨­åæè³ã»æ¸ä¾¡åå´", expanded=(st.session_state.step == 5)):
-        st.caption("è³ç£ãç»é²ããã¨ãå®é¡æ³ã¾ãã¯å®çæ³ã§æå²ãæ¸ä¾¡åå´è²»ãèªåè¨ç®ããP&Lã¨ã­ã£ãã·ã¥ãã­ã¼ã«åæ ãã¾ãã")
-
-        if "n_assets" not in st.session_state:
-            st.session_state.n_assets = 0
-
-        dep_assets = []
-        for aidx in range(st.session_state.n_assets):
-            ac1, ac2, ac3, ac4, ac5 = st.columns(5)
-            with ac1:
-                a_name = st.text_input("è³ç£å", value=f"è³ç£{aidx+1}", key=f"asset_name_{aidx}")
-            with ac2:
-                a_cat = st.selectbox("ç¨®å¥", list(DEPRECIATION_CATEGORIES.keys()), key=f"asset_cat_{aidx}")
-            with ac3:
-                a_cost = st.number_input("åå¾åä¾¡ (å)", value=1_000_000, step=100_000, key=f"asset_cost_{aidx}")
-            with ac4:
-                default_life = DEPRECIATION_CATEGORIES[a_cat]["useful_life"]
-                a_life = st.number_input("èç¨å¹´æ°", min_value=1, max_value=50, value=default_life, key=f"asset_life_{aidx}")
-            with ac5:
-                a_start = st.number_input("åå¾æ", min_value=0, max_value=120, value=0, key=f"asset_start_{aidx}",
-                                          help="0=äºæ¥­éå§åï¼åææè³ï¼ã1=1ã¶æç®...")
-
-            # IMPROVEMENT 2: Depreciation method choice
-            a_method = st.radio(f"è³ç£{aidx+1} æ¸ä¾¡åå´æ¹æ³", ["å®é¡æ³", "å®çæ³ (200%)"], horizontal=True, key=f"asset_method_{aidx}")
-            a_residual = st.number_input(f"è³ç£{aidx+1} æ®å­ä¾¡é¡ (å)", value=1, step=1, key=f"asset_residual_{aidx}", min_value=1)
-
-            if a_method == "å®é¡æ³":
-                monthly_dep = (a_cost - a_residual) / (a_life * 12) if a_life > 0 else 0
-            else:  # å®çæ³
-                declining_rate = 2.0 / a_life
-                monthly_dep = a_cost * declining_rate / 12
-
-            dep_assets.append({
-                "name": a_name, "category": a_cat, "cost": a_cost,
-                "useful_life": a_life, "start_month": a_start,
-                "method": a_method, "residual_value": a_residual,
-                "monthly_dep": monthly_dep,
-            })
-
-        acol1, acol2 = st.columns(2)
-        with acol1:
-            if st.button("ï¼ è³ç£ãè¿½å ", key="add_asset"):
-                st.session_state.n_assets += 1; st.rerun()
-        with acol2:
-            if st.session_state.n_assets > 0 and st.button("ï¼ æå¾ã®è³ç£ãåé¤", key="del_asset"):
-                st.session_state.n_assets -= 1; st.rerun()
-
-        if dep_assets:
-            st.markdown("**æ¸ä¾¡åå´ã¹ã±ã¸ã¥ã¼ã«**")
-            dep_summary = []
-            for a in dep_assets:
-                dep_summary.append({
-                    "è³ç£å": a["name"],
-                    "ç¨®å¥": a["category"],
-                    "åå¾åä¾¡": f"Â¥{a['cost']:,}",
-                    "æ®å­ä¾¡é¡": f"Â¥{a['residual_value']:,}",
-                    "èç¨å¹´æ°": f"{a['useful_life']}å¹´",
-                    "æ¹æ³": a["method"],
-                    "æé¡åå´è²»": f"Â¥{a['monthly_dep']:,.0f}",
-                    "åå¾æ": f"{a['start_month']}ã¶æç®" if a["start_month"] > 0 else "åææè³",
-                })
-            st.dataframe(pd.DataFrame(dep_summary), hide_index=True, use_container_width=True)
-
-            # IMPROVEMENT 2: Show depreciation schedule chart for each asset
-            for a in dep_assets:
-                with st.expander(f"æ¸ä¾¡åå´ã¹ã±ã¸ã¥ã¼ã«è©³ç´° â {a['name']}", expanded=False):
-                    dep_schedule = []
-                    remaining_value = a['cost']
-                    for month in range(1, min(a['useful_life'] * 12 + 1, sim_months + 1)):
-                        if a['method'] == "å®é¡æ³":
-                            monthly_depr = (a['cost'] - a['residual_value']) / (a['useful_life'] * 12)
-                        else:
-                            declining_rate = 2.0 / a['useful_life']
-                            monthly_depr = remaining_value * declining_rate / 12
-                        remaining_value = max(a['residual_value'], remaining_value - monthly_depr)
-                        dep_schedule.append({
-                            "æ": month,
                             "æé¡åå´è²»": monthly_depr,
                             "ç´¯ç©åå´é¡": a['cost'] - remaining_value,
                             "å¸³ç°¿ä¾¡é¡": remaining_value,
@@ -1189,8 +970,8 @@ with tab_sim:
     except NameError:
         tax_rate = 0.30; tax_rate_pct = 30
 
-    # âââ ã·ããªãªä¿æ° âââ
-    if scenario == "æ¥½è¥³ +20%":
+    # âââ ã·ããªãªä¿®æ° âââ
+    if scenario == "æ¥½è¦³ +20%":
         s_mult, c_mult = 1.2, 0.9
     elif scenario == "æ²è¦³ -20%":
         s_mult, c_mult = 0.8, 1.1
@@ -1201,7 +982,7 @@ with tab_sim:
     rows = []
     cum_profit = 0
     cum_profit_after_tax = 0
-    # åçæºå¥ã®ã¢ã¯ãã£ãé¡§å®¢ãç®¡ç
+    # åçæºå¥ã®ã¢ã¯ãã£ãé¡§å®¢ãç®¡ç
     active_by_source = [0] * len(rev_sources)
     cash = cash_init
     s_buf = [0] * (pay_delay + 1)
@@ -1228,7 +1009,7 @@ with tab_sim:
         # K factor: ãã¤ã©ã«ä¿æ°ã«ããå¢å¹
         total_new = int((u_ad + u_org) * (1 + k_factor))
 
-        # åçæºå¥ã®å£²ä¸è¨ç®
+        # åçæºå¥ã®å£²ä¸è¨ç®
         total_sales = 0
         total_units = 0
         total_churn = 0
@@ -1317,7 +1098,7 @@ with tab_sim:
             "æ¸ä¾¡åå´è²»": monthly_depreciation,
             "å¶æ¥­å©ç": op, "ç´¯ç©å©ç": cum_profit,
             "ç¨é¡": tax_amount, "ç¨ã·ã¼ã«ã": tax_shield,
-            "ç¨å¼å¾å©ç": net_income, "ç´¯ç©ç¸å¼å¾å©ç": cum_profit_after_tax,
+            "ç¨å¼å¾å©ç": net_income, "ç´¯ç©ç¨å¼å¾å©ç": cum_profit_after_tax,
             "æçåå²ç¹å£²ä¸": bep,
             "ã­ã£ãã·ã¥æ®é«": cash,
             "è²»ç¨_å¤åè²»": vc,
@@ -1345,7 +1126,7 @@ with tab_sim:
             <div class="fa-title">â  è³éèª¿éã¢ã©ã¼ã â {cash_alert_month}ã¶æç®ã«ã­ã£ãã·ã¥ã Â¥{fundraise_alert:,} ãä¸åãã¾ã</div>
             <div class="fa-body">
                 ç¾å¨ã®ãã¼ã³ã¬ã¼ãã§ã¯ <strong>{cash_alert_month}ã¶æç®</strong> ã«è³éãä¸è¶³ããè¦è¾¼ã¿ã§ãã<br>
-                è³éèª¿éã®ç¸åã«ã¯éå¸¸3ã6ã¶æãããããã<strong>{max(1, cash_alert_month - 6)}ã¶æç¾</strong> ã¾ã§ã«èª¿éæ´»åãéå§ãããã¨ãæ¨å¥¨ãã¾ãã<br>
+                è³éèª¿éã®æºåã«ã¯éå¸¸3ã6ã¶æãããããã<strong>{max(1, cash_alert_month - 6)}ã¶æçN</strong> ã¾ã§ã«èª¿éæ´»åãéå§ãããã¨ãæ¨å¥¨ãã¾ãã<br>
                 å¯¾ç­: â  ã¨ã¯ã¤ãã£èª¿é â¡ ããããã¡ã¤ãã³ã¹ â¢ ã³ã¹ãåæ¸ â£ å£²ä¸å é
             </div>
         </div>
@@ -1364,10 +1145,10 @@ with tab_sim:
     ue_html = '<div class="kpi-grid">'
     ue_html += f"""<div class="kpi-card accent">
         <div class="label">å®¢åä¾¡ (ARPU)</div><div class="value">Â¥{weighted_price:,.0f}</div>
-        <div class="delta neutral">å éå¹³åï¼{len(rev_sources)}åæ¯æºï¼</div></div>"""
+        <div class="delta neutral">å éå¹³åï¼{len(rev_sources)}åçæºï¼</div></div>"""
     ue_html += f"""<div class="kpi-card {'success' if margin_pct > 50 else 'warn'}">
         <div class="label">éçå©ç / ä»¶</div><div class="value">Â¥{margin_per_unit:,.0f}</div>
-        <div class="delta {'up' if margin_pct > 50 else 'down'}">å©ç'ç {margin_pct:.1f}%</div></div>"""
+        <div class="delta {'up' if margin_pct > 50 else 'down'}">å©çé {margin_pct:.1f}%</div></div>"""
     ue_html += f"""<div class="kpi-card accent">
         <div class="label">LTV (é¡§å®¢çæ¶¯ä¾¡å¤)</div><div class="value">Â¥{ltv_val:,.0f}</div>
         <div class="delta neutral">å¹³å {avg_life:.1f}ã¶æ</div></div>"""
@@ -1501,7 +1282,7 @@ with tab_sim:
             "åºåå®£ä¼è²»": "sum", "åºå®è²»åè¨": "sum", "æ¸ä¾¡åå´è²»": "sum",
             "å¶æ¥­å©ç": "sum", "ç´¯ç©å©ç": "last", "ç´¯ç©ç¨å¼å¾å©ç": "last",
             "ç¨é¡": "sum", "ç¨ã·ã¼ã«ã": "sum", "ç¨å¼å¾å©ç": "sum",
-            "æçåå²ç¹e£²ä¸": "mean", "ã­ã£ãã·ã¥æ®é«": "last",
+            "æçåå²ç¹å£²ä¸": "mean", "ã­ã£ãã·ã¥æ®é«": "last",
             "æ°è¦ç²å¾": "sum", "è§£ç´æ°": "sum", "ã¢ã¯ãã£ãé¡§å®¢æ°": "last",
             "è²©å£²æ°": "sum", "äººå¡æ°": "last",
             "è²»ç¨_å¤åè²»": "sum", "è²»ç¨_åºåå®£ä¼è²»": "sum",
@@ -1526,7 +1307,7 @@ with tab_sim:
     ])
 
     with g1:
-        # IMPROVEMENT 1: å ä¾ä»ãåæ¯æ¨ç§»ãã£ã¼ã
+        # IMPROVEMENT 1: å¡ä¾ä»ãåæ¯æ¨ç§»ãã£ã¼ã
         sales_line = alt.Chart(df_view).mark_line(strokeWidth=2.5).encode(
             x=alt.X(x_field, title=x_title),
             y=alt.Y("å£²ä¸é«:Q", axis=alt.Axis(format="~s", title="éé¡ (Â¥)")),
@@ -1553,7 +1334,7 @@ with tab_sim:
             color=alt.Color("label:N",
                 scale=alt.Scale(domain=["å£²ä¸é«", "æçåå²ç¹", "å¶æ¥­å©ç"],
                                 range=["#2196F3", "#94A3B8", "#16A34A"]),
-                legend=alt.Legend(title="å ä¾", orient="top"))
+                legend=alt.Legend(title="å¡ä¾", orient="top"))
         )
         st.altair_chart(_dk((profit_area + sales_line + bep_line + legend_chart).interactive()), use_container_width=True)
 
@@ -1596,7 +1377,7 @@ with tab_sim:
                 r.append({"æçªå·": i + 1, "ç´¯ç©å©ç": cum, "ã·ããªãª": label})
             return pd.DataFrame(r)
 
-        df_all = pd.concat([sc_calc(1.2, 0.9, "æ¥½è¥³"), sc_calc(1.0, 1.0, "ä¸­åº¸"), sc_calc(0.8, 1.1, "æ²è¦³")])
+        df_all = pd.concat([sc_calc(1.2, 0.9, "æ¥½è¦³"), sc_calc(1.0, 1.0, "ä¸­åº¸"), sc_calc(0.8, 1.1, "æ²è¦³")])
         sc_ch = alt.Chart(df_all).mark_line(strokeWidth=2).encode(
             x=alt.X("æçªå·:Q", title="æ"),
             y=alt.Y("ç´¯ç©å©ç:Q", axis=alt.Axis(format="~s", title="Â¥ ç´¯ç©å©ç")),
@@ -1705,7 +1486,210 @@ with tab_sim:
 
             if total_u > 0 and w_churn > 0:
                 arpu = total_s / total_u
-                m_ltv = arpu / w_chââââ
+                m_ltv = arpu / w_churn
+                m_cac = cpa
+                m_ratio = m_ltv / m_cac if m_cac > 0 else 0
+            else:
+                m_ltv = 0; m_cac = cpa; m_ratio = 0
+
+            ltv_cac_data.append({"æçªå·": m, "LTV": m_ltv, "CAC": m_cac, "LTV/CACæ¯ç": m_ratio})
+
+        lc_df = pd.DataFrame(ltv_cac_data)
+        # LTV/CACæ¯çã®æ¨ç§»
+        ratio_line = alt.Chart(lc_df).mark_line(strokeWidth=2.5, color="#2196F3").encode(
+            x=alt.X("æçªå·:Q", title="æ"),
+            y=alt.Y("LTV/CACæ¯ç:Q", title="LTV / CAC æ¯ç"),
+            tooltip=["æçªå·", alt.Tooltip("LTV/CACæ¯ç:Q", format=".1f"),
+                      alt.Tooltip("LTV:Q", format=",.0f"), alt.Tooltip("CAC:Q", format=",")]
+        )
+        health_line = alt.Chart(pd.DataFrame({"y": [3.0], "label": ["å¥å¨ã©ã¤ã³ (3.0x)"]})).mark_rule(
+            color="#16A34A", strokeDash=[6, 3], strokeWidth=2
+        ).encode(y="y:Q")
+        health_text = alt.Chart(pd.DataFrame({"y": [3.0], "label": ["3.0x å¥å¨ã©ã¤ã³"]})).mark_text(
+            align="left", dx=5, dy=-8, fontSize=11, color="#16A34A", fontWeight="bold"
+        ).encode(y="y:Q", text="label:N")
+
+        st.altair_chart(_dk((ratio_line + health_line + health_text).interactive()), use_container_width=True)
+
+        # LTV vs CAC éé¡æ¨ç§»
+        lc_melt = lc_df.melt(id_vars=["æçªå·"], value_vars=["LTV", "CAC"], var_name="ææ¨", value_name="éé¡")
+        lc_chart2 = alt.Chart(lc_melt).mark_line(strokeWidth=2).encode(
+            x=alt.X("æçªå·:Q", title="æ"),
+            y=alt.Y("éé¡:Q", axis=alt.Axis(format="~s", title="Â¥ éé¡")),
+            color=alt.Color("ææ¨:N",
+                scale=alt.Scale(domain=["LTV", "CAC"], range=["#2196F3", "#EF4444"]),
+                legend=alt.Legend(title="ææ¨", orient="top")),
+            tooltip=["æçªå·", "ææ¨", alt.Tooltip("éé¡:Q", format=",")]
+        )
+        st.altair_chart(_dk(lc_chart2.interactive()), use_container_width=True)
+
+    with g8:
+        # IMPROVEMENT 4: æåº¦åæ (ãã«ãã¼ããã£ã¼ã)
+        st.markdown("**ãã©ã¡ã¼ã¿ã®Â±20%å¤åããã¡ã¤ãã«æã®å¶æ¥­å©çã«ä¸ããå½±é¿**")
+
+        sensitivity_params = {
+            "å®¢åä¾¡": ("weighted_price", 0.8, 1.2),
+            "CPA": ("cpa", 0.8, 1.2),
+            "åºåäºç®": ("ad_budget_monthly", 0.8, 1.2),
+            "åºå®è²»": ("total_fixed", 0.8, 1.2),
+            "å¤åè²»ç": ("vc_pct_of_sales", 0.8, 1.2),
+            "è§£ç´ç": ("weighted_churn", 0.8, 1.2),
+        }
+
+        sensitivity_results = []
+        baseline_profit = last["å¶æ¥­å©ç"]
+
+        for param_name, (param_var, low_mult, high_mult) in sensitivity_params.items():
+            # ã·ãã¥ã¬ã¼ã·ã§ã³ç¨ã®ãã¼ã¹å¤ãåå¾
+            base_val = eval(param_var) if param_var in ["weighted_price", "cpa", "ad_budget_monthly", "total_fixed", "vc_pct_of_sales", "weighted_churn"] else 0
+
+            # ä½ã·ããªãªã¨é«ã·ããªãªãè¨ç®
+            for scenario_mult, scenario_name in [(low_mult, "Low"), (high_mult, "High")]:
+                temp_profit = baseline_profit
+                if param_var == "weighted_price":
+                    temp_price = weighted_price * scenario_mult
+                    temp_margin = temp_price - vc_per_unit_fixed - temp_price * vc_pct_of_sales
+                    temp_profit = (last["è²©å£²æ°"] * temp_margin) - ad_budget_monthly - total_fixed_with_hire - monthly_depreciation
+                elif param_var == "cpa":
+                    temp_cpa = cpa * scenario_mult
+                    temp_new = int(ad_budget_monthly / temp_cpa) if temp_cpa > 0 else 0
+                    temp_profit = last["å£²ä¸é«"] - last["å¤åè²»"] - ad_budget_monthly - total_fixed_with_hire - monthly_depreciation
+                elif param_var == "ad_budget_monthly":
+                    temp_ad = ad_budget_monthly * scenario_mult
+                    temp_profit = last["å£²ä¸é«"] - last["å¤åè²»"] - temp_ad - total_fixed_with_hire - monthly_depreciation
+                elif param_var == "total_fixed":
+                    temp_fixed = total_fixed * scenario_mult
+                    temp_profit = last["å£²ä¸é«"] - last["å¤åè²»"] - ad_budget_monthly - (temp_fixed + hire_cost) - monthly_depreciation
+                elif param_var == "vc_pct_of_sales":
+                    temp_vc_pct = vc_pct_of_sales * scenario_mult
+                    temp_vc = last["è²©å£²æ°"] * vc_per_unit_fixed + last["å£²ä¸é«"] * temp_vc_pct
+                    temp_profit = last["å£²ä¸é«"] - temp_vc - ad_budget_monthly - total_fixed_with_hire - monthly_depreciation
+                elif param_var == "weighted_churn":
+                    temp_churn = weighted_churn * scenario_mult
+                    temp_profit = baseline_profit
+
+                sensitivity_results.append({
+                    "parameter": param_name,
+                    "scenario": scenario_name,
+                    "profit_change": temp_profit - baseline_profit
+                })
+
+        sens_df = pd.DataFrame(sensitivity_results)
+        sens_pivot = sens_df.pivot(index="parameter", columns="scenario", values="profit_change").reset_index()
+        sens_pivot["Impact Range"] = sens_pivot["High"] - sens_pivot["Low"]
+        sens_pivot = sens_pivot.sort_values("Impact Range", ascending=True)
+
+        # ãã«ãã¼ããã£ã¼ãã®æç»
+        tornado_data = []
+        for idx, row in sens_pivot.iterrows():
+            tornado_data.append({"Parameter": row["parameter"], "Impact": row["Low"], "Direction": "Low"})
+            tornado_data.append({"Parameter": row["parameter"], "Impact": row["High"], "Direction": "High"})
+
+        tornado_df = pd.DataFrame(tornado_data)
+        tornado_chart = alt.Chart(tornado_df).mark_bar().encode(
+            x=alt.X("Impact:Q", title="å¶æ¥­å©çã¸ã®å½±é¿ (Â¥)"),
+            y=alt.Y("Parameter:N", title="ãã©ã¡ã¼ã¿", sort=list(sens_pivot["parameter"])),
+            color=alt.Color("Direction:N",
+                scale=alt.Scale(domain=["Low", "High"], range=["#EF4444", "#16A34A"]),
+                legend=alt.Legend(title="å¤åæ¹å", orient="right")),
+            tooltip=["Parameter", alt.Tooltip("Impact:Q", format=",.0f"), "Direction"]
+        )
+        st.altair_chart(_dk(tornado_chart), use_container_width=True)
+
+    with g9:
+        st.dataframe(df_view, use_container_width=True)
+
+    # âââ ã¨ã¯ã¹ãã¼ã âââ
+    st.markdown('<div class="section-title">ãã¼ã¿ã¨ã¯ã¹ãã¼ã</div>', unsafe_allow_html=True)
+    ec1, ec2, ec3 = st.columns(3)
+    with ec1:
+        st.download_button("CSV ãã¦ã³ã­ã¼ã", df.to_csv(index=False).encode("utf-8-sig"),
+                           "simulation.csv", "text/csv", use_container_width=True)
+    with ec2:
+        buf = io.BytesIO()
+        with pd.ExcelWriter(buf, engine="openpyxl") as w:
+            df.to_excel(w, index=False, sheet_name="PL")
+        st.download_button("Excel ãã¦ã³ã­ã¼ã", buf.getvalue(), "simulation.xlsx",
+                           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+    with ec3:
+        st.button("PDF ã¬ãã¼ãï¼Phase 2ï¼", disabled=True, use_container_width=True)
+
+
+# âââââââââââââââââââââââââââââââââââââââââââââââ
+# TAB 2 â AI ã¢ããã¤ã¶ã¼ï¼UI ã¢ãã¯ï¼
+# âââââââââââââââââââââââââââââââââââââââââââââââ
+with tab_ai:
+    st.markdown("""
+    <div class="cs-banner">
+        â¡ <strong>Coming Soon â Phase 2</strong>
+        ãã®ã¿ãã¯æ©è½ã¤ã¡ã¼ã¸ã§ãããã¢ãªã³ã°ç¨ãã¬ãã¥ã¼ã¨ãã¦ãç¢ºèªãã ããã
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("#### AI ã¢ããã¤ã¶ã¼")
+    st.caption("ããªãã®äºæ¥­è¨ç»ããªã¢ã«ã¿ã¤ã ã§åæããå·ä½çãªæ¹åææ¡ãèªåçæãã¾ãã")
+
+    st.markdown("""
+    <div style="max-width:680px; margin-top:8px;">
+        <div class="ai-bubble">
+            <div class="ai-label">Biz Maker AI Â· åæçµæ</div>
+            å¥åãããäºæ¥­è¨ç»ãåæãã¾ãããä»¥ä¸ãä¸»ãªæè¦ã§ãã<br><br>
+            <strong>1. ã­ã£ãã·ã¥ãã­ã¼è­¦å</strong><br>
+            ç¾å¨ã®å¥éãµã¤ã¯ã«ã¨æ¯æãµã¤ã¯ã«ã®ãºã¬ã«ããã4ã6ã¶æç®ã«ã­ã£ãã·ã¥ãã¿ã¤ãã«ãªãå¯è½æ§ãããã¾ãã
+            éè»¢è³éã¨ãã¦ 300ã500ä¸åã®äºåãç¢ºä¿ãããã¨ãæ¨å¥¨ãã¾ãã<br><br>
+            <strong>2. LTV / CAC æ¯ç</strong><br>
+            ç¾å¨ã®æ¯çã¯ 2.4x ã§ãæ¥­çå¥å¨ã©ã¤ã³ã® 3.0x ãä¸åã£ã¦ãã¾ãã
+            è§£ç´çã 1ã2% æ¹åããã ãã§æ¯çã 3.6x ã¾ã§æ¹åããåçæ§ãå¤§å¹ã«åä¸ãã¾ãã<br><br>
+            <strong>3. å­£ç¯å¤åãªã¹ã¯</strong><br>
+            SaaSæ¥­ç¨®ã®å ´åã7ã8æã«å£²ä¸ãç´ 5% ä½ä¸ããå¾åãããã¾ãã
+            ãã®ææã«åãããå¹´æ¬¡å¥ç´ãã©ã³ã®æä¾ãæ¤è¨ãã¦ã¿ã¦ãã ããã
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("**AI ã«è³ªåãã**")
+    col_q, col_send = st.columns([6, 1])
+    with col_q:
+        user_q = st.text_input("", placeholder="ä¾: è§£ç´çãæ¹åããããã®å·ä½çãªæ½ç­ãæãã¦", label_visibility="collapsed")
+    with col_send:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("éä¿¡", use_container_width=True):
+            st.info("Phase 2 ã§ã¯ Claude API ãæ¥ç¶ãããªã¢ã«ã¿ã¤ã ã§åç­ãã¾ãã")
+
+    st.markdown('<div class="section-title">ããããè³ªå</div>', unsafe_allow_html=True)
+    qa_cols = st.columns(3)
+    questions = [
+        ("è§£ç´çã®æ¹åç­", "ã«ã¹ã¿ãã¼ãµã¯ã»ã¹ã®å¼·åã¨ãªã³ãã¼ãã£ã³ã°æ¹åãæãå¹æçã§ãã"),
+        ("è³éèª¿éã®ã¿ã¤ãã³ã°", "ã©ã³ã¦ã§ã¤ã6ã¶æãä¸åãåã«èª¿éæ´»åãå§ãããã¨ãæ¨å¥¨ãã¾ãã"),
+        ("CPA ãä¸ããæ¹æ³", "SEOå¼·åã«ããèªç¶æµå¥ã®å¢å ã¨ããªã¿ã¼ã²ãã£ã³ã°åºåã®æé©åãæå¹ã§ãã"),
+    ]
+    for col, (q, a) in zip(qa_cols, questions):
+        with col:
+            with st.expander(q):
+                st.markdown(f"<div style='font-size:0.83rem;color:#374151;line-height:1.6;'>{a}<br><br><em style='color:#9CA3AF;'>Phase 2 ã§ã¯ AIãäºæ¥­è¨ç»ãã¼ã¿ãåç§ããä¸ã§åç­ãã¾ãã</em></div>", unsafe_allow_html=True)
+
+    st.markdown('<div class="section-title">ä¼è©±ä¾ãã¬ãã¥ã¼</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="chat-wrap" style="background:#F8FAFC;border-radius:12px;padding:16px;border:1px solid #E8ECF0;">
+        <div style="float:right;clear:both;">
+            <div class="user-bubble">è§£ç´çãä¸ããã«ã¯ã©ãããã°ããã§ããï¼</div>
+        </div>
+        <div style="clear:both; margin-top:8px;">
+            <div class="ai-bubble" style="max-width:90%;">
+                <div class="ai-label">Biz Maker AI</div>
+                è§£ç´çæ¹åã«ã¯ä¸»ã«3ã¤ã®ã¢ãã­ã¼ããå¹æçã§ãï¼<br>
+                â  ãªã³ãã¼ãã£ã³ã°ã®å¼·åï¼æåã®30æ¥ãéµï¼<br>
+                â¡ ãã­ãã¯ãåã§ã®ä¾¡å¤æä¾ã®å¯è¦åï¼ããã·ã¥ãã¼ãç­ï¼<br>
+                â¢ ãã«ã¹ã¹ã³ã¢ã«ããæ©æãã£ã¼ã³äºæ¸¬ã¨ä»å¥<br><br>
+                å¾¡ç¤¾ã®ç¾å¨ã®è§£ç´çãæ¹åããå ´åãLTVãå¤§å¹ã«åä¸ããåçæ§ãæ¹åãã¾ãã
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# âââââââââââââââââââââââââââââââââââââââââââââââ
 # TAB 3 â å°éå®¶ã«ç¸è«ï¼UI ã¢ãã¯ï¼
 # âââââââââââââââââââââââââââââââââââââââââââââââ
 with tab_cons:
@@ -1717,7 +1701,7 @@ with tab_cons:
     """, unsafe_allow_html=True)
 
     st.markdown("#### å°éå®¶ãããã³ã°")
-    st.caption("ããªãã®äºæ¥­ãã§ã¼ãºã¨èª²é¡ã«åã£ãå°éå®¶ãè¦ã¤ãã¦ãç´æ¥ç¸è«ã§ãã¾ãã")
+    st.caption("ããªãã®äºæ¥­ãã§ã¼ãºã¨èª²é¡ã«åã£ãå°éå®¶ãè¦ã¤ãã¦ãç´æ¥ç¸è«ã§ãã¾ãã")
 
     fc1, fc2, fc3, fc4 = st.columns(4)
     with fc1:
@@ -1732,14 +1716,14 @@ with tab_cons:
     st.markdown("---")
     consultants = [
         {"initials":"TT","name":"ç°ä¸­ å¤ªé","field":"è²¡åã»ä¼è¨",
-         "desc":"å¬èªä¼è¨å£«ãã¹ã¿ã¼ãã¢ããã®è³éèª¿éã»äºæ¥­è¨ç»ç­å®ã 200ç¤¾ä»¥ä¸æ¯æ´ãåBigFouråºèº«ãSaaSãã¸ãã¹ã®è²¡åã¢ãã«è¨­è¨ãå°éã",
+         "desc":"å¸èªä¼è¨å£«ãã¹ã¿ã¼ãã¢ããã®è³éèª¿éã»äºæ¥­è¨ç»ç­å®ã 200ç¤¾ä»¥ä¸æ¯æ´ãåBigFouråºèº«ãSaaSãã¸ãã¹ã®è²¡åã¢ãã«è¨­è¨ãå°éã",
          "rating":"4.9","reviews":128,"price":"Â¥8,000 / 30å","badge":"ããªãã®äºæ¥­è¨ç»ã«ããã","tags":["è²¡åã¢ãã«","è³éèª¿é","SaaS"]},
         {"initials":"HK","name":"é´æ¨ è±å­","field":"ãã¼ã±ãã£ã³ã°",
          "desc":"åGoogleãD2Cã»SaaSã®ã°ã­ã¼ã¹ãã¼ã±ãã£ã³ã°ãå°éã¨ããCPAæ¹åã»LTVåä¸ã®å®ç¸¾å¤æ°ãã³ã³ãã³ãSEOããPaid Socialã¾ã§å¹åºãå¯¾å¿ã",
          "rating":"4.8","reviews":94,"price":"Â¥10,000 / 30å","badge":"CPAæ¹åã®å®ç¸¾å¤æ°","tags":["ã°ã­ã¼ã¹","SEO","åºåéç¨"]},
         {"initials":"IY","name":"å±±ç° ä¸é","field":"æ³å",
          "desc":"å¼è­·å£«ãã¹ã¿ã¼ãã¢ããã®æ³åå¨è¬ï¼å©ç¨è¦ç´ã»ãã©ã¤ãã·ã¼ããªã·ã¼ã»å¥ç´æ¸ä½æï¼ããIPOæºåã¾ã§ä¸æ°éè²«ã§å¯¾å¿ãåå30åç¡æã",
-         "rating":"4.6","reviews":67,"price":"Â¥12,000 / 30å","badge":"ååç¡æç¸è«ãã","tags":["å¥ç´æ¸","IPO","è¦ç´ä½æ"]},
+         "rating":"4.6","reviews":67,"price":"Â¥12,000 / 30å","badge":"ååç¡æç´è«ãã","tags":["å¥ç´æ¸","IPO","è¦ç´ä½æ"]},
     ]
     for cons in consultants:
         st.markdown(f"""
@@ -1783,9 +1767,9 @@ with tab_sns:
     st.markdown("#### ã³ãã¥ããã£")
     st.caption("åããã§ã¼ãºã®èµ·æ¥­å®¶ã»çµå¶èã¨ç¹ãããäºæ¥­è¨ç»ã®ãã£ã¼ãããã¯ãäº¤æãã¾ãããã")
 
-    with st.expander("æç¨¿ãä½æãã", expanded=False):
+    with st.expander("æç¨ãä½æãã", expanded=False):
         post_txt = st.text_area("åå®¹", placeholder="äºæ¥­è¨ç»ã«ã¤ãã¦ç¸è«ããããã¨ãå­¦ãã ãã¨ãã·ã§ã¢ãã¾ãããâ¦", height=100)
-        tag_opts = st.multiselect("ã¿ã°", ["#SaaS","#EC","#é£²é£","#ã³ã³ãµã«","#è³éèª¿é","#ãã¼ã±","#è§£ç´çæ¹å","#åæé¡§å®¢ç²å¾"])
+        tag_opts = st.multiselect("ã¿ã°", ["#SaaS","#EC","#é££é£","#ã³ã³ãµã«","#è³éèª¿é","#ãã¼ã±","#è§£ç´çæ¹å","#åæé¡§å®¢ç²å¾"])
         if st.button("æç¨¿ãã", key="post_btn"):
             st.info("Phase 2 ã§å®è£äºå®ã§ãã")
 
@@ -1829,6 +1813,6 @@ with tab_sns:
 # âââ ããã¿ã¼ âââ
 st.markdown("""
 <div style="margin-top:3rem;padding-top:1rem;border-top:1px solid #E8ECF0;text-align:center;color:#9CA3AF;font-size:0.75rem;">
-    Biz Maker â ãã¸ãã¹å±åµãã©ãããã©ã¼ã  v5.0 â ãã©ãã·ã¥ã¢ããç &nbsp;|&nbsp; Phase 1 Enhanced &nbsp;|&nbsp; Powered by Streamlit
+    Biz Maker â ãã¸ãã¹ãµåµãã©ãããã©ã¼ã  v5.0 â ãã©ãã·ã¥ã¢ããç &nbsp;|&nbsp; Phase 1 Enhanced &nbsp;|&nbsp; Powered by Streamlit
 </div>
 """, unsafe_allow_html=True)
