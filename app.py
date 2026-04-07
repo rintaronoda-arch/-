@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
-import io   
+import io
 
 # ─── Altair ダークテーマ ヘルパー ───
 def _dk(chart):
@@ -21,6 +21,272 @@ def _dk(chart):
         view=alt.ViewConfig(stroke="transparent"),
         title=alt.TitleConfig(color="#c8d8f0"),
     )
+
+def build_excel_pl(df, df_yearly, rev_sources, fc_values_dict, vc_values_dict, industry_name, company_name="My Company"):
+    """Generate a properly formatted P&L Excel file and return bytes."""
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    wb = openpyxl.Workbook()
+
+    NAVY   = "0F1E3C"
+    AMBER  = "F59E0B"
+    TEAL   = "14B8A6"
+    WHITE  = "FFFFFF"
+    LGRAY  = "F1F5F9"
+    MGRAY  = "E2E8F0"
+    DGRAY  = "64748B"
+    GREEN  = "16A34A"
+    RED    = "DC2626"
+
+    def hdr_fill(hex_color):
+        return PatternFill("solid", fgColor=hex_color)
+    def _font(bold=False, color="000000", size=10):
+        return Font(bold=bold, color=color, size=size)
+    def _align(h="left", v="center", wrap=False):
+        return Alignment(horizontal=h, vertical=v, wrap_text=wrap)
+
+    # ━━ SHEET 1: 月次P&L ━━
+    ws = wb.active
+    ws.title = "月次P&L"
+    n_months = len(df)
+    months = list(df["月番号"])
+
+    ws.merge_cells(f"A1:{get_column_letter(n_months + 2)}1")
+    c = ws["A1"]
+    c.value = f"損益計算書 (P&L) — {company_name}  |  業種: {industry_name}"
+    c.font = Font(bold=True, color=WHITE, size=13)
+    c.fill = hdr_fill(NAVY)
+    c.alignment = _align("left")
+
+    ws.merge_cells(f"A2:{get_column_letter(n_months + 2)}2")
+    c2 = ws["A2"]
+    c2.value = f"シミュレーション期間: {n_months}ヶ月  |  BizMaker v7.0"
+    c2.font = Font(color="94A3B8", size=9)
+    c2.fill = hdr_fill("1A2F52")
+    c2.alignment = _align("left")
+    ws.row_dimensions[1].height = 24
+    ws.row_dimensions[2].height = 16
+
+    ws.cell(4, 1, "科目").font = Font(bold=True, color=WHITE, size=10)
+    ws.cell(4, 1).fill = hdr_fill(NAVY)
+    ws.cell(4, 2, "カテゴリ").font = Font(bold=True, color=WHITE, size=10)
+    ws.cell(4, 2).fill = hdr_fill(NAVY)
+    for i, m in enumerate(months):
+        col = i + 3
+        ws.cell(4, col, f"M{m}").font = Font(bold=True, color=WHITE, size=9)
+        ws.cell(4, col).fill = hdr_fill(NAVY)
+        ws.cell(4, col).alignment = _align("center")
+    col_total = n_months + 3
+    ws.cell(4, col_total, "合計").font = Font(bold=True, color=WHITE, size=10)
+    ws.cell(4, col_total).fill = hdr_fill(AMBER)
+    ws.cell(4, col_total).alignment = _align("center")
+    ws.row_dimensions[4].height = 20
+
+    _row = [5]
+    def write_row(label, category, values, bold=False, bg=None, fg="1E293B", fmt='#,##0', indent=0):
+        r = _row[0]
+        ws.row_dimensions[r].height = 17
+        label_text = ("  " * indent) + label
+        c_l = ws.cell(r, 1, label_text)
+        c_l.font = Font(bold=bold, color=fg, size=9)
+        if bg: c_l.fill = hdr_fill(bg)
+        c_l.alignment = _align("left")
+        c_c = ws.cell(r, 2, category)
+        c_c.font = Font(color=DGRAY, size=8)
+        if bg: c_c.fill = hdr_fill(bg)
+        total = 0
+        for i, v in enumerate(values):
+            col = i + 3
+            cell = ws.cell(r, col, v)
+            cell.number_format = fmt
+            cell.font = Font(bold=bold, color=fg, size=9)
+            cell.alignment = _align("right")
+            if bg: cell.fill = hdr_fill(bg)
+            total += v if v else 0
+        tc = ws.cell(r, col_total, total)
+        tc.number_format = fmt
+        tc.font = Font(bold=bold, color=fg, size=9)
+        tc.alignment = _align("right")
+        if bg: tc.fill = hdr_fill(bg)
+        _row[0] += 1
+
+    def write_separator(bg=LGRAY):
+        r = _row[0]
+        ws.row_dimensions[r].height = 6
+        for col in range(1, col_total + 1):
+            ws.cell(r, col).fill = hdr_fill(bg)
+        _row[0] += 1
+
+    def write_section_header(label):
+        r = _row[0]
+        ws.row_dimensions[r].height = 18
+        ws.merge_cells(f"A{r}:B{r}")
+        c = ws.cell(r, 1, label)
+        c.font = Font(bold=True, color=AMBER, size=9)
+        c.fill = hdr_fill("1A2F52")
+        for col in range(3, col_total + 1):
+            ws.cell(r, col).fill = hdr_fill("1A2F52")
+        _row[0] += 1
+
+    write_section_header("▌ 売上高 (Revenue)")
+    write_row("売上高合計", "Revenue", list(df["売上高"]), bold=True, bg="EFF6FF", fg="1E3A5F")
+    write_separator()
+    write_section_header("▌ 変動費 (Variable Costs)")
+    write_row("変動費合計", "Variable Cost", list(df["変動費"]), bold=True, bg="FFF7ED", fg="7C2D12")
+    write_row("  └ 広告宣伝費", "Advertising", list(df["広告宣伝費"]), fg=DGRAY, indent=1)
+    write_separator()
+    gp_vals = list(df["限界利益"])
+    gp_rates = [gp / s * 100 if s > 0 else 0 for gp, s in zip(df["限界利益"], df["売上高"])]
+    write_row("限界利益 (Gross Profit)", "Gross Profit", gp_vals, bold=True, bg="F0FDF4", fg="14532D")
+    write_row("  └ 限界利益率 (%)", "Gross Margin%", gp_rates, bg="F0FDF4", fg=GREEN, fmt="0.0%")
+    write_separator()
+    write_section_header("▌ 販売費及び一般管理費 (SG&A)")
+    write_row("固定費合計 (人件費込)", "Fixed + Labor", list(df["固定費合計"]), bold=True, fg="1E293B")
+    for fc_name, fc_val in fc_values_dict.items():
+        if isinstance(fc_val, (int, float)) and fc_val > 0:
+            write_row(f"  └ {fc_name}", "Fixed Cost", [fc_val] * n_months, fg=DGRAY, indent=1)
+    write_row("  └ 人件費 (採用計画分)", "Hire Cost", list(df["人件費（追加採用）"]), fg=DGRAY, indent=1)
+    write_row("減価償却費", "D&A", list(df["減価償却費"]), fg="6D28D9")
+    write_separator()
+    ebitda_vals = [op + dep for op, dep in zip(df["営業利益"], df["減価償却費"])]
+    write_row("EBITDA", "EBITDA", ebitda_vals, bold=True, bg="F5F3FF", fg="4C1D95")
+    ebitda_rates = [e / s * 100 if s > 0 else 0 for e, s in zip(ebitda_vals, df["売上高"])]
+    write_row("  └ EBITDA マージン (%)", "EBITDA Margin%", ebitda_rates, bg="F5F3FF", fg="7C3AED", fmt="0.0%")
+    write_separator()
+    write_row("営業利益 (EBIT)", "EBIT", list(df["営業利益"]), bold=True, bg="FFF1F2", fg="881337")
+    op_rates = [op / s * 100 if s > 0 else 0 for op, s in zip(df["営業利益"], df["売上高"])]
+    write_row("  └ 営業利益率 (%)", "EBIT Margin%", op_rates, bg="FFF1F2", fg=RED, fmt="0.0%")
+    write_row("法人税等", "Tax", list(df["税額"]), fg=DGRAY)
+    write_row("税シールド (減価償却)", "Tax Shield", list(df["税シールド"]), fg=TEAL)
+    write_separator()
+    write_row("当期純利益 (Net Income)", "Net Income", list(df["税引後利益"]), bold=True, bg="F0FDF4", fg="14532D")
+    ni_rates = [ni / s * 100 if s > 0 else 0 for ni, s in zip(df["税引後利益"], df["売上高"])]
+    write_row("  └ 純利益率 (%)", "Net Margin%", ni_rates, bg="F0FDF4", fg=GREEN, fmt="0.0%")
+    write_separator()
+    write_section_header("▌ 累積・キャッシュフロー")
+    write_row("累積利益", "Cum Profit", list(df["累積利益"]), bold=True)
+    write_row("累積税引後利益", "Cum Net Income", list(df["累積税引後利益"]), bold=True)
+    write_row("キャッシュ残高", "Cash Balance", list(df["キャッシュ残高"]), bold=True, fg="0369A1")
+    write_separator()
+    write_section_header("▌ 営業指標 (KPIs)")
+    write_row("新規獲得顧客数", "New Users", list(df["新規獲得"]), fmt="#,##0")
+    write_row("アクティブ顧客数", "Active Users", list(df["アクティブ顧客数"]), fmt="#,##0")
+    write_row("解約数", "Churn", list(df["解約数"]), fmt="#,##0")
+
+    ws.column_dimensions["A"].width = 28
+    ws.column_dimensions["B"].width = 18
+    for i in range(3, col_total + 1):
+        ws.column_dimensions[get_column_letter(i)].width = 12
+    ws.freeze_panes = "C5"
+
+    # ━━ SHEET 2: 年次サマリー ━━
+    ws2 = wb.create_sheet("年次サマリー")
+    n_years = len(df_yearly)
+    yr_col_total = n_years + 3
+    ws2.merge_cells(f"A1:{get_column_letter(yr_col_total)}1")
+    ws2["A1"].value = f"年次損益サマリー — {company_name}"
+    ws2["A1"].font = Font(bold=True, color=WHITE, size=12)
+    ws2["A1"].fill = hdr_fill(NAVY)
+    ws2["A1"].alignment = _align("left")
+    ws2.row_dimensions[1].height = 22
+    ws2.cell(2, 1, "科目").font = Font(bold=True, color=WHITE, size=10)
+    ws2.cell(2, 1).fill = hdr_fill(NAVY)
+    ws2.cell(2, 2, "カテゴリ").font = Font(bold=True, color=WHITE, size=10)
+    ws2.cell(2, 2).fill = hdr_fill(NAVY)
+    for i, yr_val in enumerate(df_yearly["年"]):
+        col = i + 3
+        ws2.cell(2, col, f"Year {int(yr_val)}").font = Font(bold=True, color=WHITE, size=10)
+        ws2.cell(2, col).fill = hdr_fill(NAVY)
+        ws2.cell(2, col).alignment = _align("center")
+    ws2.cell(2, yr_col_total, "累計").font = Font(bold=True, color=WHITE, size=10)
+    ws2.cell(2, yr_col_total).fill = hdr_fill(AMBER)
+    ws2.cell(2, yr_col_total).alignment = _align("center")
+    ws2.row_dimensions[2].height = 20
+
+    def write_yr_row(ws_t, yr_r, label, category, values, bold=False, bg=None, fg="1E293B", fmt='#,##0'):
+        ws_t.row_dimensions[yr_r].height = 17
+        c = ws_t.cell(yr_r, 1, label)
+        c.font = Font(bold=bold, color=fg, size=9)
+        if bg: c.fill = hdr_fill(bg)
+        c.alignment = _align("left")
+        c2x = ws_t.cell(yr_r, 2, category)
+        c2x.font = Font(color=DGRAY, size=8)
+        if bg: c2x.fill = hdr_fill(bg)
+        total = 0
+        for i, v in enumerate(values):
+            col = i + 3
+            cell = ws_t.cell(yr_r, col, v)
+            cell.number_format = fmt
+            cell.font = Font(bold=bold, color=fg, size=9)
+            cell.alignment = _align("right")
+            if bg: cell.fill = hdr_fill(bg)
+            total += v if v else 0
+        tc = ws_t.cell(yr_r, yr_col_total, total)
+        tc.number_format = fmt
+        tc.font = Font(bold=bold, color=fg, size=9)
+        tc.alignment = _align("right")
+        if bg: tc.fill = hdr_fill(bg)
+
+    yr = 3
+    write_yr_row(ws2, yr, "売上高", "Revenue", list(df_yearly["売上高"]), bold=True, bg="EFF6FF", fg="1E3A5F"); yr += 1
+    write_yr_row(ws2, yr, "変動費", "Variable Cost", list(df_yearly["変動費"]), fg="7C2D12"); yr += 1
+    write_yr_row(ws2, yr, "限界利益", "Gross Profit", list(df_yearly["限界利益"]), bold=True, bg="F0FDF4", fg="14532D"); yr += 1
+    gm_rates_y = [gp / s * 100 if s > 0 else 0 for gp, s in zip(df_yearly["限界利益"], df_yearly["売上高"])]
+    write_yr_row(ws2, yr, "  └ 限界利益率 (%)", "Gross Margin%", gm_rates_y, fg=GREEN, fmt="0.0%"); yr += 1
+    write_yr_row(ws2, yr, "固定費合計", "Fixed+Labor", list(df_yearly["固定費合計"]), fg=DGRAY); yr += 1
+    write_yr_row(ws2, yr, "広告宣伝費", "Advertising", list(df_yearly["広告宣伝費"]), fg=DGRAY); yr += 1
+    write_yr_row(ws2, yr, "減価償却費", "D&A", list(df_yearly["減価償却費"])); yr += 1
+    ebitda_yr = [op + dep for op, dep in zip(df_yearly["営業利益"], df_yearly["減価償却費"])]
+    write_yr_row(ws2, yr, "EBITDA", "EBITDA", ebitda_yr, bold=True, bg="F5F3FF", fg="4C1D95"); yr += 1
+    write_yr_row(ws2, yr, "営業利益", "EBIT", list(df_yearly["営業利益"]), bold=True, bg="FFF1F2", fg="881337"); yr += 1
+    op_rates_yr = [op / s * 100 if s > 0 else 0 for op, s in zip(df_yearly["営業利益"], df_yearly["売上高"])]
+    write_yr_row(ws2, yr, "  └ 営業利益率 (%)", "EBIT Margin%", op_rates_yr, fg=RED, fmt="0.0%"); yr += 1
+    write_yr_row(ws2, yr, "税額", "Tax", list(df_yearly["税額"]), fg=DGRAY); yr += 1
+    write_yr_row(ws2, yr, "当期純利益", "Net Income", list(df_yearly["税引後利益"]), bold=True, bg="F0FDF4", fg="14532D"); yr += 1
+    ni_rates_yr = [ni / s * 100 if s > 0 else 0 for ni, s in zip(df_yearly["税引後利益"], df_yearly["売上高"])]
+    write_yr_row(ws2, yr, "  └ 純利益率 (%)", "Net Margin%", ni_rates_yr, fg=GREEN, fmt="0.0%"); yr += 1
+    write_yr_row(ws2, yr, "キャッシュ残高 (期末)", "Cash (EOP)", list(df_yearly["キャッシュ残高"]), bold=True, fg="0369A1"); yr += 1
+    write_yr_row(ws2, yr, "アクティブ顧客数 (期末)", "MAU (EOP)", list(df_yearly["アクティブ顧客数"].astype(int)), fmt="#,##0"); yr += 1
+    ws2.column_dimensions["A"].width = 30
+    ws2.column_dimensions["B"].width = 18
+    for i in range(3, yr_col_total + 1):
+        ws2.column_dimensions[get_column_letter(i)].width = 14
+    ws2.freeze_panes = "C3"
+
+    # ━━ SHEET 3: KPIサマリー ━━
+    ws3 = wb.create_sheet("KPIサマリー")
+    ws3["A1"] = "KPIサマリー"
+    ws3["A1"].font = Font(bold=True, color=WHITE, size=12)
+    ws3["A1"].fill = hdr_fill(NAVY)
+    ws3.row_dimensions[1].height = 20
+    kpi_rows_data = [
+        ("業種", industry_name),
+        ("シミュレーション期間", f"{len(df)}ヶ月"),
+        ("最終月売上高", df["売上高"].iloc[-1]),
+        ("最終月営業利益", df["営業利益"].iloc[-1]),
+        ("最終月純利益", df["税引後利益"].iloc[-1]),
+        ("最終月キャッシュ残高", df["キャッシュ残高"].iloc[-1]),
+        ("最終月アクティブ顧客数", df["アクティブ顧客数"].iloc[-1]),
+        ("累積利益合計", df["累積利益"].iloc[-1]),
+        ("累積純利益合計", df["累積税引後利益"].iloc[-1]),
+        ("月次黒字化月", next((m for m in df["月番号"] if df.loc[df["月番号"]==m, "営業利益"].values[0] > 0), "期間外")),
+    ]
+    for i, (k, v) in enumerate(kpi_rows_data, 2):
+        ws3.cell(i, 1, k).font = Font(color=DGRAY, size=9)
+        cell = ws3.cell(i, 2, v)
+        if isinstance(v, float):
+            cell.number_format = "#,##0"
+        cell.font = Font(bold=True, size=10)
+        ws3.row_dimensions[i].height = 16
+    ws3.column_dimensions["A"].width = 28
+    ws3.column_dimensions["B"].width = 22
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return buf.getvalue()
 
 # ─────────────────────────────────────────────
 # PAGE CONFIG
@@ -178,6 +444,28 @@ label[data-testid="stWidgetLabel"] { color:#8899bb !important; }
 .funding-alert { background:rgba(248,113,113,.07); border:1px solid rgba(248,113,113,.3); border-radius:12px; padding:16px 20px; margin:12px 0; }
 .funding-alert .fa-title { font-size:0.9rem; font-weight:700; color:#f87171; margin-bottom:4px; }
 .funding-alert .fa-body { font-size:0.82rem; color:#8899bb; line-height:1.6; }
+
+/* ── Growth Navigator ── */
+.gn-goal-card {
+    background:linear-gradient(135deg,#0d1526,#111e32);
+    border:1px solid #1c2b44; border-radius:12px; padding:18px 20px; margin:8px 0;
+    transition: border-color 0.2s;
+}
+.gn-goal-card:hover { border-color:#f5a623; }
+.gn-goal-card .gn-title { font-size:0.95rem; font-weight:700; color:#f5a623; margin-bottom:6px; }
+.gn-goal-card .gn-value { font-size:1.4rem; font-weight:800; color:#fff; }
+.gn-goal-card .gn-sub { font-size:0.78rem; color:#5a6a8a; margin-top:4px; }
+.gn-lever-row {
+    background:#0d1526; border:1px solid #1c2b44; border-radius:10px;
+    padding:14px 18px; margin:6px 0; display:flex; align-items:center; gap:14px;
+}
+.gn-lever-row .lever-rank { font-size:1.2rem; font-weight:800; color:#f5a623; min-width:28px; }
+.gn-lever-row .lever-name { font-size:0.88rem; font-weight:600; color:#c8d8f0; }
+.gn-lever-row .lever-impact { font-size:0.78rem; color:#4ade80; }
+.gn-lever-row .lever-current { font-size:0.78rem; color:#5a6a8a; }
+.gn-benchmark-bar { height:8px; border-radius:4px; background:#1c2b44; position:relative; margin:4px 0; }
+.gn-benchmark-fill { height:8px; border-radius:4px; position:absolute; left:0; top:0; }
+.gn-section-header { font-size:1.05rem; font-weight:700; color:#fff; margin:20px 0 10px; padding-bottom:6px; border-bottom:2px solid #f5a62344; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -187,13 +475,13 @@ label[data-testid="stWidgetLabel"] { color:#8899bb !important; }
 # 変動費マスター：全業種共通のコスト項目プール
 VARIABLE_COST_ITEMS = {
     "仕入原価":       {"key": "vc_cogs",     "unit": "円/件", "desc": "商品の仕入れ・製造原価"},
-    "配送料":         {"key": "vc_shipping",  "unit": "円/件", "desc": "配送・物ぅ費用"},
+    "配送料":         {"key": "vc_shipping",  "unit": "円/件", "desc": "配送・物流費用"},
     "サーバー原価":   {"key": "vc_server",    "unit": "円/件", "desc": "SaaS・クラウドの従量課金"},
     "決済手数料":     {"key": "vc_payment",   "unit": "%",     "desc": "クレジットカード等の決済手数料"},
     "モール手数料":   {"key": "vc_platform",  "unit": "%",     "desc": "ECモール等のプラットフォーム手数料"},
     "外注加工費":     {"key": "vc_outsource", "unit": "円/件", "desc": "外部への加工・制作委託"},
     "梱包資材費":     {"key": "vc_packaging", "unit": "円/件", "desc": "梱包材・パッケージ費用"},
-    "ロイヤリティ":   {"key": "vc_royalty",   "unit": "%",     "desc": "ライセンス・ロイヤルティ費用"},
+    "ロイヤリティ":   {"key": "vc_royalty",   "unit": "%",     "desc": "ライセンス・ロイヤリティ費用"},
     "販売手数料":     {"key": "vc_sales_fee", "unit": "%",     "desc": "販売代理店・アフィリエイト手数料"},
     "返品コスト":     {"key": "vc_returns",   "unit": "円/件", "desc": "返品・交換に伴う費用"},
 }
@@ -212,7 +500,7 @@ FIXED_COST_ITEMS = {
     "水道光熱費":     {"key": "fc_utilities",    "desc": "電気・ガス・水道料金"},
     "通信費":         {"key": "fc_telecom",      "desc": "電話・インターネット回線費"},
     "交通費":         {"key": "fc_transport",    "desc": "出張・通勤交通費"},
-    "顧問料":         {"key": "fc_advisory",     "desc": "税理士・弁護士等の��問契約"},
+    "顧問料":         {"key": "fc_advisory",     "desc": "税理士・弁護士等の顧問契約"},
     "採用費":         {"key": "fc_recruiting",   "desc": "求人広告・人材紹介手数料"},
 }
 
@@ -259,13 +547,30 @@ INDUSTRY_TEMPLATES = {
         "fc_items": {"給与合計": 4_000_000, "社会保険料": 600_000, "業務委託費": 1_000_000, "家賃": 500_000, "システム利用料": 100_000, "その他固定費": 300_000},
         "seasonal": [0.9,0.8,1.0,1.0,1.0,1.0,1.0,0.9,1.0,1.0,1.1,1.3],
     },
-    "財い切り＋サブスク": {
+    "買い切り＋サブスク": {
         "unit_price": 35_000, "ad_budget": 1_200_000, "cpa": 4000,
         "organic_start": 20, "organic_growth": 4.0, "churn_rate": 5.0,
         "vc_items": {"仕入原価": 12_000, "配送料": 1_000, "サーバー原価": 100, "決済手数料": 3.6},
         "fc_items": {"給与合計": 3_000_000, "社会保険料": 450_000, "業務委託費": 500_000, "家賃": 200_000, "システム利用料": 100_000, "その他固定費": 150_000},
         "seasonal": [0.9,0.85,1.0,1.0,1.0,1.0,1.0,0.9,1.0,1.05,1.1,1.2],
     },
+}
+
+# ─────────────────────────────────────────────
+# 業種ベンチマーク (Growth Navigator用)
+# ─────────────────────────────────────────────
+INDUSTRY_BENCHMARKS = {
+    "SaaS / サブスク":      {"CTR": 2.5, "CVR": 5.0, "churn": 3.0, "LTV_CAC": 3.0, "ARPU": 9800,  "gross_margin": 80},
+    "EC / 通販":            {"CTR": 1.8, "CVR": 3.0, "churn": 15.0,"LTV_CAC": 2.5, "ARPU": 4500,  "gross_margin": 40},
+    "飲食店":               {"CTR": 3.5, "CVR": 8.0, "churn": 25.0,"LTV_CAC": 2.0, "ARPU": 1200,  "gross_margin": 65},
+    "コンサルティング":     {"CTR": 1.2, "CVR": 2.0, "churn": 8.0, "LTV_CAC": 5.0, "ARPU": 300000,"gross_margin": 85},
+    "ハードウェア":         {"CTR": 1.5, "CVR": 2.5, "churn": 0.0, "LTV_CAC": 2.0, "ARPU": 25000, "gross_margin": 35},
+    "買い切り＋サブスク":   {"CTR": 2.0, "CVR": 3.5, "churn": 5.0, "LTV_CAC": 2.8, "ARPU": 35000, "gross_margin": 50},
+    "メディア / 広告":      {"CTR": 2.0, "CVR": 4.0, "churn": 12.0,"LTV_CAC": 2.5, "ARPU": 500,   "gross_margin": 70},
+    "教育 / EdTech":        {"CTR": 2.2, "CVR": 4.5, "churn": 8.0, "LTV_CAC": 3.0, "ARPU": 6000,  "gross_margin": 75},
+    "ヘルスケア":           {"CTR": 1.5, "CVR": 3.0, "churn": 6.0, "LTV_CAC": 3.5, "ARPU": 12000, "gross_margin": 60},
+    "フィンテック":         {"CTR": 1.0, "CVR": 2.0, "churn": 4.0, "LTV_CAC": 4.0, "ARPU": 15000, "gross_margin": 70},
+    "カスタム":             {"CTR": 2.0, "CVR": 4.0, "churn": 5.0, "LTV_CAC": 3.0, "ARPU": 5000,  "gross_margin": 50},
 }
 
 MONTH_LABELS = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"]
@@ -275,9 +580,9 @@ DEPRECIATION_CATEGORIES = {
     "設備・機械": {"useful_life": 7, "examples": "製造機械、加工設備、厨房設備"},
     "IT資産": {"useful_life": 4, "examples": "PC、サーバー、ネットワーク機器"},
     "車両": {"useful_life": 6, "examples": "営業車、配送トラック"},
-    "不動産（建物）": {"useful_life": 22, "examples": "店舗内装、オフィズ内装"},
+    "不動産（建物）": {"useful_life": 22, "examples": "店舗内装、オフィス内装"},
     "ソフトウェア": {"useful_life": 5, "examples": "自社開発ソフト、ライセンス"},
-    "その他": {"useful_life": 5, "examples": "工具、備品、仕器"},
+    "その他": {"useful_life": 5, "examples": "工具、備品、什器"},
 }
 
 # ─────────────────────────────────────────────
@@ -307,7 +612,7 @@ st.markdown("""
     <div class="logo">Biz<span>Maker</span></div>
     <div class="tagline">ビジネス共創プラットフォーム</div>
   </div>
-  <div><span class="nav-badge">v6.0 — Dark Edition</span></div>
+  <div><span class="nav-badge">v7.0 — Growth Navigator</span></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -420,7 +725,7 @@ with tab_sim:
 
         rcol1, rcol2 = st.columns(2)
         with rcol1:
-            if st.button("＋ 収盆源を追加", key="add_rev"):
+            if st.button("＋ 収益源を追加", key="add_rev"):
                 st.session_state.n_revenue += 1; st.rerun()
         with rcol2:
             if st.session_state.n_revenue > 1 and st.button("－ 最後の収益源を削除", key="del_rev"):
@@ -792,10 +1097,10 @@ with tab_sim:
                                           help="0=事業開始前（初期投資）、1=1ヶ月目...")
 
             # IMPROVEMENT 2: Depreciation method choice
-            a_method = st.radio(f"資産{aidx+1} 減価償却方法", ["定顝法", "定率法 (200%)"], horizontal=True, key=f"asset_method_{aidx}")
+            a_method = st.radio(f"資産{aidx+1} 減価償却方法", ["定額法", "定率法 (200%)"], horizontal=True, key=f"asset_method_{aidx}")
             a_residual = st.number_input(f"資産{aidx+1} 残存価額 (円)", value=1, step=1, key=f"asset_residual_{aidx}", min_value=1)
 
-            if a_method == "定顝法":
+            if a_method == "定額法":
                 monthly_dep = (a_cost - a_residual) / (a_life * 12) if a_life > 0 else 0
             else:  # 定率法
                 declining_rate = 2.0 / a_life
@@ -838,7 +1143,7 @@ with tab_sim:
                     dep_schedule = []
                     remaining_value = a['cost']
                     for month in range(1, min(a['useful_life'] * 12 + 1, sim_months + 1)):
-                        if a['method'] == "定顝法":
+                        if a['method'] == "定額法":
                             monthly_depr = (a['cost'] - a['residual_value']) / (a['useful_life'] * 12)
                         else:
                             declining_rate = 2.0 / a['useful_life']
@@ -846,7 +1151,7 @@ with tab_sim:
                         remaining_value = max(a['residual_value'], remaining_value - monthly_depr)
                         dep_schedule.append({
                             "月": month,
-                            "月顝償却費": monthly_depr,
+                            "月額償却費": monthly_depr,
                             "累積償却額": a['cost'] - remaining_value,
                             "帳簿価額": remaining_value,
                         })
@@ -1108,6 +1413,21 @@ with tab_sim:
         })
 
     df = pd.DataFrame(rows)
+
+    # ─── 年次集計 (常に計算：Excel出力・Growth Navigator用) ───
+    df_yearly = df.groupby("年").agg({
+        "売上高": "sum", "変動費": "sum", "限界利益": "sum",
+        "広告宣伝費": "sum", "固定費合計": "sum", "減価償却費": "sum",
+        "営業利益": "sum", "累積利益": "last", "累積税引後利益": "last",
+        "税額": "sum", "税シールド": "sum", "税引後利益": "sum",
+        "損益分岐点売上": "mean", "キャッシュ残高": "last",
+        "新規獲得": "sum", "解約数": "sum", "アクティブ顧客数": "last",
+        "販売数": "sum", "人員数": "last",
+        "費用_変動費": "sum", "費用_広告宣伝費": "sum",
+        "費用_固定費": "sum", "費用_減価償却費": "sum",
+        "人件費（追加採用）": "sum",
+    }).reset_index()
+
     last = df.iloc[-1]
     cur_sales = last["売上高"]
     cur_profit = last["営業利益"]
@@ -1267,6 +1587,221 @@ with tab_sim:
             <div class="advice-value">{nc_rate*100:.1f}%</div>
             <div class="advice-desc">現在 {weighted_churn*100:.1f}% → {nc_rate*100:.1f}%</div></div>""", unsafe_allow_html=True)
 
+    # ─── 成長レバー診断 (Growth Navigator v7.0) ───
+    st.markdown('<div class="section-title">🧭 成長レバー診断 — Growth Navigator</div>', unsafe_allow_html=True)
+    st.caption("あなたの目標を達成するために、どのパラメータを改善すべきか自動診断します。")
+
+    gn_col1, gn_col2 = st.columns([1, 1])
+    with gn_col1:
+        gn_goal_type = st.selectbox("目標タイプ", [
+            "月次黒字化", "年次黒字化（3年以内）", "MAU目標達成",
+            "Runway維持（18ヶ月）", "LTV/CAC比 改善"
+        ], key="gn_goal_type")
+    with gn_col2:
+        if gn_goal_type == "MAU目標達成":
+            gn_target_val = st.number_input("目標MAU", value=10000, step=1000, key="gn_target_mau")
+        elif gn_goal_type == "LTV/CAC比 改善":
+            gn_target_val = st.number_input("目標LTV/CAC比", value=3.0, step=0.5, key="gn_target_ltvcac")
+        else:
+            gn_target_val = None
+
+    # ── ゴール判定 ──
+    last_month_profit = last["営業利益"]
+    final_mau = int(last["アクティブ顧客数"])
+    final_cash = last["キャッシュ残高"]
+    monthly_burn = (last["固定費合計"] + last["広告宣伝費"] + last.get("減価償却費", 0))
+    runway_months = int(final_cash / monthly_burn) if monthly_burn > 0 else 999
+
+    if gn_goal_type == "月次黒字化":
+        bep_month = next((r["月番号"] for _, r in df.iterrows() if r["営業利益"] > 0), None)
+        gn_achieved = bep_month is not None
+        gn_status_text = f"{bep_month}ヶ月目に達成" if gn_achieved else "期間内に未達"
+        gn_gap_desc = "" if gn_achieved else f"最終月の営業損失: ¥{abs(last_month_profit):,.0f}"
+    elif gn_goal_type == "年次黒字化（3年以内）":
+        yr3_profit = df_yearly[df_yearly["年"] <= 3]["営業利益"].sum() if len(df_yearly[df_yearly["年"] <= 3]) > 0 else 0
+        gn_achieved = yr3_profit > 0
+        gn_status_text = f"3年累計: ¥{yr3_profit:,.0f}" if gn_achieved else f"3年累計赤字: ¥{yr3_profit:,.0f}"
+        gn_gap_desc = "" if gn_achieved else f"黒字化まであと ¥{abs(yr3_profit):,.0f}"
+    elif gn_goal_type == "MAU目標達成":
+        gn_achieved = final_mau >= gn_target_val
+        gn_status_text = f"最終MAU: {final_mau:,}" + (" — 達成!" if gn_achieved else f" / 目標: {int(gn_target_val):,}")
+        gn_gap_desc = "" if gn_achieved else f"あと {int(gn_target_val) - final_mau:,} ユーザー不足"
+    elif gn_goal_type == "Runway維持（18ヶ月）":
+        gn_achieved = runway_months >= 18
+        gn_status_text = f"現在のRunway: {runway_months}ヶ月" + (" — 安全圏" if gn_achieved else " — 危険")
+        gn_gap_desc = "" if gn_achieved else f"あと {18 - runway_months}ヶ月分の余裕が必要"
+    else:  # LTV/CAC
+        gn_achieved = ltv_cac >= gn_target_val
+        gn_status_text = f"現在のLTV/CAC: {ltv_cac:.2f}" + (" — 健全" if gn_achieved else f" / 目標: {gn_target_val:.1f}")
+        gn_gap_desc = "" if gn_achieved else f"LTV/CACを {gn_target_val - ltv_cac:.2f} 改善必要"
+
+    if gn_achieved:
+        st.markdown(f"""<div class="gn-goal-card" style="border-color:#4ade80;">
+            <div class="gn-title" style="color:#4ade80;">✅ 目標達成</div>
+            <div class="gn-value">{gn_status_text}</div></div>""", unsafe_allow_html=True)
+    else:
+        st.markdown(f"""<div class="gn-goal-card">
+            <div class="gn-title">🎯 {gn_goal_type}</div>
+            <div class="gn-value">{gn_status_text}</div>
+            <div class="gn-sub">{gn_gap_desc}</div></div>""", unsafe_allow_html=True)
+
+    # ── レバー感度分析 ──
+    if not gn_achieved:
+        st.markdown('<div class="gn-section-header">📊 改善レバー ランキング</div>', unsafe_allow_html=True)
+        st.caption("各パラメータを10%改善した場合のインパクトを自動計算。「適用」ボタンでサイドバーの値を即座に更新できます。")
+
+        def quick_kpi(price_mult=1.0, cpa_mult=1.0, churn_mult=1.0, organic_mult=1.0, fc_mult=1.0, ad_mult=1.0):
+            """簡易シミュレーション：指定倍率でKPIを再計算"""
+            sim_price = weighted_price * price_mult
+            sim_cpa = cpa * cpa_mult
+            sim_churn = weighted_churn * churn_mult
+            sim_organic = organic_start * organic_mult
+            sim_fc = total_fixed * fc_mult
+            sim_ad = ad_budget_monthly * ad_mult
+            # 簡易月次計算
+            sim_active = 0
+            sim_total_profit = 0
+            sim_cash = initial_cash
+            for m in range(1, sim_months + 1):
+                new_paid = int(sim_ad / sim_cpa) if sim_cpa > 0 else 0
+                new_organic = int(sim_organic * (1 + organic_growth / 100) ** ((m - 1) / 12))
+                new_total = new_paid + new_organic
+                sim_active = max(0, sim_active * (1 - sim_churn) + new_total)
+                sales_count = int(sim_active)
+                revenue = sales_count * sim_price
+                vc = sales_count * (vc_per_unit_fixed + sim_price * vc_pct_of_sales)
+                op_profit = revenue - vc - sim_fc - sim_ad
+                sim_total_profit += op_profit
+                sim_cash += op_profit
+            return {"final_profit": op_profit, "total_profit": sim_total_profit,
+                    "final_mau": int(sim_active), "final_cash": sim_cash,
+                    "ltv_cac": (sim_price / sim_churn if sim_churn > 0 else sim_price * 120) / sim_cpa if sim_cpa > 0 else 999}
+
+        base = quick_kpi()
+        levers = [
+            {"name": "単価 +10%",       "key": "unit_price",       "params": {"price_mult": 1.1},   "direction": "↑ 単価を上げる"},
+            {"name": "CPA -10%",         "key": "cpa",             "params": {"cpa_mult": 0.9},     "direction": "↓ 獲得コストを下げる"},
+            {"name": "解約率 -10%",      "key": "churn_rate",      "params": {"churn_mult": 0.9},   "direction": "↓ 解約を減らす"},
+            {"name": "オーガニック +10%", "key": "organic_start",   "params": {"organic_mult": 1.1}, "direction": "↑ 自然流入を増やす"},
+            {"name": "固定費 -10%",      "key": "fc_total",        "params": {"fc_mult": 0.9},      "direction": "↓ 固定費を削る"},
+            {"name": "広告費 +10%",      "key": "ad_budget",       "params": {"ad_mult": 1.1},      "direction": "↑ 広告投資を増やす"},
+        ]
+
+        # 各レバーのインパクト計算
+        for lv in levers:
+            result = quick_kpi(**lv["params"])
+            if gn_goal_type in ["月次黒字化", "年次黒字化（3年以内）"]:
+                lv["impact"] = result["total_profit"] - base["total_profit"]
+                lv["impact_label"] = f"累積利益 {'+' if lv['impact'] >= 0 else ''}{lv['impact']:,.0f}円"
+            elif gn_goal_type == "MAU目標達成":
+                lv["impact"] = result["final_mau"] - base["final_mau"]
+                lv["impact_label"] = f"MAU {'+' if lv['impact'] >= 0 else ''}{lv['impact']:,}"
+            elif gn_goal_type == "Runway維持（18ヶ月）":
+                lv["impact"] = result["final_cash"] - base["final_cash"]
+                lv["impact_label"] = f"キャッシュ {'+' if lv['impact'] >= 0 else ''}¥{lv['impact']:,.0f}"
+            else:
+                lv["impact"] = result["ltv_cac"] - base["ltv_cac"]
+                lv["impact_label"] = f"LTV/CAC {'+' if lv['impact'] >= 0 else ''}{lv['impact']:.2f}"
+
+        levers_sorted = sorted(levers, key=lambda x: abs(x["impact"]), reverse=True)
+
+        for rank, lv in enumerate(levers_sorted, 1):
+            impact_color = "#4ade80" if lv["impact"] > 0 else "#f87171" if lv["impact"] < 0 else "#5a6a8a"
+            lc1, lc2, lc3 = st.columns([5, 3, 2])
+            with lc1:
+                st.markdown(f"""<div class="gn-lever-row">
+                    <div class="lever-rank">#{rank}</div>
+                    <div><div class="lever-name">{lv['name']}</div>
+                    <div class="lever-current">{lv['direction']}</div></div>
+                </div>""", unsafe_allow_html=True)
+            with lc2:
+                st.markdown(f'<div style="padding:14px 0;"><span style="color:{impact_color};font-weight:700;font-size:0.9rem;">{lv["impact_label"]}</span></div>', unsafe_allow_html=True)
+            with lc3:
+                apply_key = f"gn_apply_{lv['key']}"
+                if st.button("適用", key=apply_key, help=f"{lv['name']} をサイドバーに反映"):
+                    if lv["key"] == "unit_price":
+                        st.session_state["unit_price"] = int(weighted_price * 1.1)
+                    elif lv["key"] == "cpa":
+                        st.session_state["cpa"] = int(cpa * 0.9)
+                    elif lv["key"] == "churn_rate":
+                        for src_name in revenue_sources:
+                            cr_key = f"churn_{src_name}"
+                            if cr_key in st.session_state:
+                                st.session_state[cr_key] = round(st.session_state[cr_key] * 0.9, 2)
+                    elif lv["key"] == "organic_start":
+                        st.session_state["organic_start"] = int(organic_start * 1.1)
+                    elif lv["key"] == "fc_total":
+                        for fc_name in selected_fc_items:
+                            fc_k = FIXED_COST_ITEMS[fc_name]["key"]
+                            if fc_k in st.session_state:
+                                st.session_state[fc_k] = int(st.session_state[fc_k] * 0.9)
+                    elif lv["key"] == "ad_budget":
+                        st.session_state["ad_budget"] = int(ad_budget_monthly * 1.1)
+                    st.rerun()
+
+        # ── 複合効果 ──
+        st.markdown('<div class="gn-section-header">🔗 複合効果シミュレーション</div>', unsafe_allow_html=True)
+        combo = quick_kpi(price_mult=1.1, cpa_mult=0.9, churn_mult=0.9)
+        combo_profit_diff = combo["total_profit"] - base["total_profit"]
+        st.markdown(f"""<div class="gn-goal-card">
+            <div class="gn-title">単価+10% × CPA-10% × 解約率-10% を同時改善した場合</div>
+            <div class="gn-value">累積利益差分: ¥{combo_profit_diff:,.0f}</div>
+            <div class="gn-sub">最終月MAU: {combo['final_mau']:,} / 最終キャッシュ: ¥{combo['final_cash']:,.0f}</div>
+        </div>""", unsafe_allow_html=True)
+
+    # ── 業種ベンチマーク比較 ──
+    st.markdown('<div class="gn-section-header">📈 業種ベンチマーク比較</div>', unsafe_allow_html=True)
+    bench = INDUSTRY_BENCHMARKS.get(industry_name, INDUSTRY_BENCHMARKS["カスタム"])
+
+    actual_churn_pct = weighted_churn * 100
+    actual_arpu = weighted_price
+    actual_gross_margin = ((cur_sales - last["変動費"]) / cur_sales * 100) if cur_sales > 0 else 0
+
+    bench_items = [
+        {"label": "解約率", "actual": actual_churn_pct, "benchmark": bench["churn"], "unit": "%", "lower_better": True},
+        {"label": "LTV/CAC比", "actual": ltv_cac, "benchmark": bench["LTV_CAC"], "unit": "x", "lower_better": False},
+        {"label": "ARPU", "actual": actual_arpu, "benchmark": bench["ARPU"], "unit": "円", "lower_better": False},
+        {"label": "粗利率", "actual": actual_gross_margin, "benchmark": bench["gross_margin"], "unit": "%", "lower_better": False},
+    ]
+
+    bc1, bc2 = st.columns(2)
+    for idx, bi in enumerate(bench_items):
+        col = bc1 if idx % 2 == 0 else bc2
+        with col:
+            ratio = bi["actual"] / bi["benchmark"] if bi["benchmark"] != 0 else 1
+            if bi["lower_better"]:
+                bar_color = "#4ade80" if ratio <= 1 else "#f87171"
+                status = "良好" if ratio <= 1 else "要改善"
+            else:
+                bar_color = "#4ade80" if ratio >= 1 else "#f5a623"
+                status = "良好" if ratio >= 1 else "要改善"
+            fill_w = min(100, ratio * 100) if not bi["lower_better"] else min(100, (1 / ratio) * 100) if ratio > 0 else 100
+            st.markdown(f"""<div style="margin:8px 0;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+                    <span style="color:#c8d8f0;font-size:0.85rem;font-weight:600;">{bi['label']}</span>
+                    <span style="color:{bar_color};font-size:0.82rem;font-weight:700;">{status}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                    <span style="color:#8899bb;font-size:0.78rem;">あなた: {bi['actual']:,.1f}{bi['unit']}</span>
+                    <span style="color:#5a6a8a;font-size:0.78rem;">業種平均: {bi['benchmark']:,.1f}{bi['unit']}</span>
+                </div>
+                <div class="gn-benchmark-bar"><div class="gn-benchmark-fill" style="width:{fill_w:.0f}%;background:{bar_color};"></div></div>
+            </div>""", unsafe_allow_html=True)
+
+    # ── 競合比較ガイド ──
+    with st.expander("🏢 競合に勝つためのシミュレーションガイド"):
+        st.markdown("""
+        **競合比較の活用方法:**
+
+        1. **解約率が業種平均より高い場合** → サイドバーの解約率を業種平均まで下げてシミュレーション → 改善インパクトを確認
+        2. **LTV/CACが低い場合** → 単価アップ or CPA削減を適用 → 目標比に到達するシナリオを探索
+        3. **粗利率が低い場合** → 変動費の各項目を見直し → どの費目の削減がもっとも効果的か診断
+
+        **ベンチマーク超えを目指す手順:**
+        - 上のレバーランキングで「適用」→ 自動でサイドバー更新 → グラフ・PLが即座に再計算
+        - 複合効果で3つ同時改善のシナリオも確認できます
+        """)
+
     # ─── グラフ (IMPROVEMENT 1: Proper legends + IMPROVEMENT 4: Sensitivity analysis) ───
     st.markdown('<div class="section-title">グラフ分析</div>', unsafe_allow_html=True)
 
@@ -1277,18 +1812,6 @@ with tab_sim:
                              index=0 if default_view == "月単位" else 1)
 
     if view_mode == "年単位":
-        df_yearly = df.groupby("年").agg({
-            "売上高": "sum", "変動費": "sum", "限界利益": "sum",
-            "広告宣伝費": "sum", "固定費合計": "sum", "減価償却費": "sum",
-            "営業利益": "sum", "累積利益": "last", "累積税引後利益": "last",
-            "税額": "sum", "税シールド": "sum", "税引後利益": "sum",
-            "損益分岐点売上": "mean", "キャッシュ残高": "last",
-            "新規獲得": "sum", "解約数": "sum", "アクティブ顧客数": "last",
-            "販売数": "sum", "人員数": "last",
-            "費用_変動費": "sum", "費用_広告宣伝費": "sum",
-            "費用_固定費": "sum", "費用_減価償却費": "sum",
-            "人件費（追加採用）": "sum",
-        }).reset_index()
         df_yearly["月"] = df_yearly["年"].apply(lambda y: f"{int(y)}年目")
         df_yearly["月番号"] = df_yearly["年"]
         df_view = df_yearly
@@ -1606,11 +2129,23 @@ with tab_sim:
         st.download_button("CSV ダウンロード", df.to_csv(index=False).encode("utf-8-sig"),
                            "simulation.csv", "text/csv", use_container_width=True)
     with ec2:
-        buf = io.BytesIO()
-        with pd.ExcelWriter(buf, engine="openpyxl") as w:
-            df.to_excel(w, index=False, sheet_name="PL")
-        st.download_button("Excel ダウンロード", buf.getvalue(), "simulation.xlsx",
-                           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+        try:
+            excel_bytes = build_excel_pl(
+                df, df_yearly,
+                rev_sources=[{"name": s, "share": 1.0 / max(1, len(revenue_sources))} for s in revenue_sources],
+                fc_values_dict={n: fc_values.get(n, 0) for n in selected_fc_items} if 'selected_fc_items' in dir() else {},
+                vc_values_dict={n: vc_values.get(n, 0) for n in selected_vc_items} if 'selected_vc_items' in dir() else {},
+                industry_name=industry_name,
+                company_name=industry_name,
+            )
+            st.download_button("Excel P&L ダウンロード", excel_bytes, "BizMaker_PL.xlsx",
+                               "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+        except Exception as e:
+            buf = io.BytesIO()
+            with pd.ExcelWriter(buf, engine="openpyxl") as w:
+                df.to_excel(w, index=False, sheet_name="PL")
+            st.download_button("Excel ダウンロード (簡易版)", buf.getvalue(), "simulation.xlsx",
+                               "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
     with ec3:
         st.button("PDF レポート（Phase 2）", disabled=True, use_container_width=True)
 
@@ -1634,7 +2169,7 @@ with tab_ai:
         <div class="ai-bubble">
             <div class="ai-label">Biz Maker AI · 分析結果</div>
             入力された事業計画を分析しました。以下が主な所見です。<br><br>
-            <strong>1. キャッシュフロー議告</strong><br>
+            <strong>1. キャッシュフロー警告</strong><br>
             現在の入金サイクルと支払サイクルのズレにより、4〜6ヶ月目にキャッシュがタイトになる可能性があります。
             運転資金として 300〜500万円の予備を確保することを推奨します。<br><br>
             <strong>2. LTV / CAC 比率</strong><br>
@@ -1648,7 +2183,7 @@ with tab_ai:
     """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("**AI に質問する(*")
+    st.markdown("**AI に質問する**")
     col_q, col_send = st.columns([6, 1])
     with col_q:
         user_q = st.text_input("", placeholder="例: 解約率を改善するための具体的な施策を教えて", label_visibility="collapsed")
@@ -1667,7 +2202,7 @@ with tab_ai:
     for col, (q, a) in zip(qa_cols, questions):
         with col:
             with st.expander(q):
-                st.markdown(f"<div style='font-size:0.83rem;color:#374151;line-height:1.6;'>{a}<br><br><em style='color:#9CA3AF;'>Phase 2 では AIお事業計画データを参照した上で回答します。</em></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='font-size:0.83rem;color:#374151;line-height:1.6;'>{a}<br><br><em style='color:#9CA3AF;'>Phase 2 では AIが事業計画データを参照した上で回答します。</em></div>", unsafe_allow_html=True)
 
     st.markdown('<div class="section-title">会話例プレビュー</div>', unsafe_allow_html=True)
     st.markdown("""
@@ -1690,7 +2225,7 @@ with tab_ai:
 
 
 # ═══════════════════════════════════════════════
-# TAB 3 — 専門家に直談（UI モック）
+# TAB 3 — 専門家に相談（UI モック）
 # ═══════════════════════════════════════════════
 with tab_cons:
     st.markdown("""
@@ -1715,7 +2250,7 @@ with tab_cons:
 
     st.markdown("---")
     consultants = [
-        {"initials":"TT","name":"田中 天郎","field":"財務・会計",
+        {"initials":"TT","name":"田中 太郎","field":"財務・会計",
          "desc":"公認会計士。スタートアップの資金調達・事業計画策定を 200社以上支援。元BigFour出身。SaaSビジネスの財務モデル設計が専門。",
          "rating":"4.9","reviews":128,"price":"¥8,000 / 30分","badge":"あなたの事業計画にマッチ","tags":["財務モデル","資金調達","SaaS"]},
         {"initials":"HK","name":"鈴木 花子","field":"マーケティング",
@@ -1723,7 +2258,7 @@ with tab_cons:
          "rating":"4.8","reviews":94,"price":"¥10,000 / 30分","badge":"CPA改善の実績多数","tags":["グロース","SEO","広告運用"]},
         {"initials":"IY","name":"山田 一郎","field":"法務",
          "desc":"弁護士。スタートアップの法務全般（利用規約・プライバシーポリシー・契約書作成）からIPO準備まで一気通貫で対応。初回30分無料。",
-         "rating":"4.6","reviews":67,"price":"¥12,000 / 30分","badge":"初回無料直談あり","tags":["契約書","IPO","規約作成"]},
+         "rating":"4.6","reviews":67,"price":"¥12,000 / 30分","badge":"初回無料相談あり","tags":["契約書","IPO","規約作成"]},
     ]
     for cons in consultants:
         st.markdown(f"""
@@ -1813,6 +2348,6 @@ with tab_sns:
 # ─── フッター ───
 st.markdown("""
 <div style="margin-top:3rem;padding-top:1rem;border-top:1px solid #E8ECF0;text-align:center;color:#9CA3AF;font-size:0.75rem;">
-    Biz Maker — ビジネス共創プラットフォーム v5.0 — ブラッシュアップ版 &nbsp;|&nbsp; Phase 1 Enhanced &nbsp;|&nbsp; Powered by Streamlit
+    Biz Maker — ビジネス共創プラットフォーム v7.0 — Growth Navigator &nbsp;|&nbsp; Phase 1 Enhanced &nbsp;|&nbsp; Powered by Streamlit
 </div>
 """, unsafe_allow_html=True)
