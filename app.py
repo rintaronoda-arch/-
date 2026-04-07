@@ -4,7 +4,7 @@ import numpy as np
 import altair as alt
 import io
 
-# ─── Altair ダークテーマ ヘルパー ───
+# ────── Altair ダークテーマ ヘルパー ──────
 def _dk(chart):
     """Altairチャートにダークモード設定を適用"""
     return chart.configure(
@@ -47,7 +47,7 @@ def build_excel_pl(df, df_yearly, rev_sources, fc_values_dict, vc_values_dict, i
     def _align(h="left", v="center", wrap=False):
         return Alignment(horizontal=h, vertical=v, wrap_text=wrap)
 
-    # ━━ SHEET 1: 月次P&L ━━
+    # ─── SHEET 1: 月次P&L ───
     ws = wb.active
     ws.title = "月次P&L"
     n_months = len(df)
@@ -153,7 +153,7 @@ def build_excel_pl(df, df_yearly, rev_sources, fc_values_dict, vc_values_dict, i
     ebitda_vals = [op + dep for op, dep in zip(df["営業利益"], df["減価償却費"])]
     write_row("EBITDA", "EBITDA", ebitda_vals, bold=True, bg="F5F3FF", fg="4C1D95")
     ebitda_rates = [e / s * 100 if s > 0 else 0 for e, s in zip(ebitda_vals, df["売上高"])]
-    write_row("  └ EBITDA マージン (%)", "EBITDA Margin%", ebitda_rates, bg="F5F3FF", fg="7C3AED", fmt="0.0%")
+    write_row("  └ EBITDAマージン (%)", "EBITDA Margin%", ebitda_rates, bg="F5F3FF", fg="7C3AED", fmt="0.0%")
     write_separator()
     write_row("営業利益 (EBIT)", "EBIT", list(df["営業利益"]), bold=True, bg="FFF1F2", fg="881337")
     op_rates = [op / s * 100 if s > 0 else 0 for op, s in zip(df["営業利益"], df["売上高"])]
@@ -181,7 +181,7 @@ def build_excel_pl(df, df_yearly, rev_sources, fc_values_dict, vc_values_dict, i
         ws.column_dimensions[get_column_letter(i)].width = 12
     ws.freeze_panes = "C5"
 
-    # ━━ SHEET 2: 年次サマリー ━━
+    # ─── SHEET 2: 年次サマリー ───
     ws2 = wb.create_sheet("年次サマリー")
     n_years = len(df_yearly)
     yr_col_total = n_years + 3
@@ -255,7 +255,7 @@ def build_excel_pl(df, df_yearly, rev_sources, fc_values_dict, vc_values_dict, i
         ws2.column_dimensions[get_column_letter(i)].width = 14
     ws2.freeze_panes = "C3"
 
-    # ━━ SHEET 3: KPIサマリー ━━
+    # ─── SHEET 3: KPIサマリー ───
     ws3 = wb.create_sheet("KPIサマリー")
     ws3["A1"] = "KPIサマリー"
     ws3["A1"].font = Font(bold=True, color=WHITE, size=12)
@@ -288,9 +288,9 @@ def build_excel_pl(df, df_yearly, rev_sources, fc_values_dict, vc_values_dict, i
     buf.seek(0)
     return buf.getvalue()
 
-# ─────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────
 # PAGE CONFIG
-# ─────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Biz Maker — ビジネス共創プラットフォーム",
     layout="wide",
@@ -298,9 +298,9 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# ─────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────
 # GLOBAL CSS — Dark Mode (Plan A: Deep Navy × Amber)
-# ─────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -316,18 +316,18 @@ section[data-testid="stSidebar"] { background:#0d1526 !important; }
 .top-nav { display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0; margin-bottom:1rem; border-bottom:1px solid #1c2b44; }
 .top-nav .logo { font-size:2.0rem; font-weight:800; color:#fff; letter-spacing:-0.5px; }
 .top-nav .logo span { color:#f5a623; }
-.top-nav .tagline { font-size:0.85rem; color:#3a4a6a; margin-top:2px; }
+.top-nav .tagline { font-size:0.85rem; color:#8899bb; margin-top:2px; }
 .nav-badge { background:#1c2b44; color:#f5a623; border-radius:20px; padding:2px 10px; font-size:0.7rem; font-weight:700; border:1px solid rgba(245,166,35,.35); }
 
 /* ── KPIカード ── */
 .kpi-grid { display:flex; gap:12px; flex-wrap:wrap; margin:1rem 0; }
 .kpi-card { flex:1; min-width:140px; background:#0d1526; border:1px solid #1c2b44; border-radius:12px; padding:14px 16px; }
-.kpi-card .label { font-size:0.72rem; color:#3a4a6a; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
+.kpi-card .label { font-size:0.72rem; color:#8899bb; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
 .kpi-card .value { font-size:1.35rem; font-weight:700; color:#fff; margin:4px 0 2px; line-height:1.2; }
 .kpi-card .delta { font-size:0.75rem; }
 .kpi-card .delta.up   { color:#34d297; }
 .kpi-card .delta.down { color:#f87171; }
-.kpi-card .delta.neutral { color:#3a4a6a; }
+.kpi-card .delta.neutral { color:#8899bb; }
 .kpi-card.accent  { border-left:3px solid #f5a623; }
 .kpi-card.success { border-left:3px solid #34d297; }
 .kpi-card.danger  { border-left:3px solid #f87171; }
@@ -338,13 +338,13 @@ section[data-testid="stSidebar"] { background:#0d1526 !important; }
 
 /* ── 改善提案カード ── */
 .advice-card { background:#0d1526; border:1px solid #1c2b44; border-radius:10px; padding:14px 16px; margin:6px 0; }
-.advice-card .advice-title { font-size:0.8rem; font-weight:600; color:#6a7a9a; margin-bottom:4px; }
+.advice-card .advice-title { font-size:0.8rem; font-weight:600; color:#b0c0d8; margin-bottom:4px; }
 .advice-card .advice-value { font-size:1.05rem; font-weight:700; color:#fff; }
-.advice-card .advice-desc { font-size:0.75rem; color:#3a4a6a; margin-top:3px; }
+.advice-card .advice-desc { font-size:0.75rem; color:#8899bb; margin-top:3px; }
 
 /* ── ステップバー ── */
 .step-bar { display:flex; gap:0; margin:0.8rem 0 1.2rem; }
-.step-item { flex:1; text-align:center; padding:8px 4px; font-size:0.72rem; font-weight:500; border-bottom:3px solid #1c2b44; color:#3a4a6a; }
+.step-item { flex:1; text-align:center; padding:8px 4px; font-size:0.72rem; font-weight:500; border-bottom:3px solid #1c2b44; color:#8899bb; }
 .step-item.active { border-bottom:3px solid #f5a623; color:#f5a623; font-weight:700; }
 .step-item.done   { border-bottom:3px solid #34d297; color:#34d297; }
 
@@ -354,17 +354,17 @@ section[data-testid="stSidebar"] { background:#0d1526 !important; }
 .funnel-row { display:flex; align-items:center; gap:0; }
 .funnel-step { flex:1; text-align:center; }
 .funnel-num  { font-size:1.3rem; font-weight:800; font-family:monospace; }
-.funnel-lbl  { font-size:0.65rem; color:#3a4a6a; margin-top:2px; }
+.funnel-lbl  { font-size:0.65rem; color:#8899bb; margin-top:2px; }
 .funnel-rate { font-size:0.68rem; font-weight:600; margin-top:2px; }
-.funnel-arr  { color:#253d5c; font-size:1.1rem; padding:0 6px; flex-shrink:0; }
+.funnel-arr  { color:#6a8aaa; font-size:1.1rem; padding:0 6px; flex-shrink:0; }
 
 /* ── チャネルファネル（各チャネル） ── */
 .ch-funnel { display:flex; align-items:center; background:#111e32; border:1px solid #1c2b44; border-radius:8px; padding:10px 14px; margin:6px 0; font-family:monospace; gap:0; }
 .ch-funnel .cf-step { flex:1; text-align:center; }
 .ch-funnel .cf-num { font-size:0.95rem; font-weight:700; }
-.ch-funnel .cf-lbl { font-size:0.6rem; color:#3a4a6a; margin-top:1px; }
-.ch-funnel .cf-sub { font-size:0.6rem; color:#4a5a7a; margin-top:1px; }
-.ch-funnel .cf-arr { color:#1c2b44; padding:0 5px; flex-shrink:0; }
+.ch-funnel .cf-lbl { font-size:0.6rem; color:#8899bb; margin-top:1px; }
+.ch-funnel .cf-sub { font-size:0.6rem; color:#8899bb; margin-top:1px; }
+.ch-funnel .cf-arr { color:#6a8aaa; padding:0 5px; flex-shrink:0; }
 
 /* ── AIチャット ── */
 .ai-bubble { background:linear-gradient(135deg,#1c2b44,#162236); color:#c8d8f0; border-radius:0 14px 14px 14px; padding:14px 18px; margin:8px 0 8px 8px; font-size:0.88rem; line-height:1.65; border:1px solid rgba(245,166,35,.15); max-width:85%; }
@@ -377,8 +377,8 @@ section[data-testid="stSidebar"] { background:#0d1526 !important; }
 .consultant-card:hover { border-color:rgba(245,166,35,.5); box-shadow:0 0 20px rgba(245,166,35,.08); }
 .cons-name { font-size:1.0rem; font-weight:700; color:#fff; }
 .cons-field { font-size:0.75rem; color:#f5a623; font-weight:600; background:rgba(245,166,35,.1); padding:2px 8px; border-radius:20px; border:1px solid rgba(245,166,35,.2); }
-.cons-desc { font-size:0.82rem; color:#5a6a8a; margin:8px 0; line-height:1.5; }
-.cons-meta { font-size:0.78rem; color:#3a4a6a; }
+.cons-desc { font-size:0.82rem; color:#a0b0c8; margin:8px 0; line-height:1.5; }
+.cons-meta { font-size:0.78rem; color:#8899bb; }
 .cons-badge { background:rgba(52,210,151,.1); color:#34d297; border-radius:20px; padding:2px 10px; font-size:0.72rem; font-weight:600; border:1px solid rgba(52,210,151,.2); display:inline-block; margin:4px 0; }
 
 /* ── SNS投稿カード ── */
@@ -386,18 +386,18 @@ section[data-testid="stSidebar"] { background:#0d1526 !important; }
 .post-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
 .post-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#1c2b44,#f5a623); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.85rem; font-weight:700; }
 .post-meta .name { font-weight:600; font-size:0.88rem; color:#fff; }
-.post-meta .sub { font-size:0.72rem; color:#3a4a6a; }
-.post-content { font-size:0.85rem; color:#6a7a9a; line-height:1.65; }
+.post-meta .sub { font-size:0.72rem; color:#8899bb; }
+.post-content { font-size:0.85rem; color:#b0c0d8; line-height:1.65; }
 .post-actions { display:flex; gap:20px; margin-top:12px; padding-top:10px; border-top:1px solid #1c2b44; }
-.post-action { font-size:0.78rem; color:#3a4a6a; cursor:pointer; font-weight:500; }
+.post-action { font-size:0.78rem; color:#8899bb; cursor:pointer; font-weight:500; }
 .tag { background:rgba(245,166,35,.1); color:#f5a623; border:1px solid rgba(245,166,35,.2); border-radius:4px; padding:1px 6px; font-size:0.7rem; font-weight:600; display:inline-block; margin:2px; }
 
 /* ── Coming Soonバッジ ── */
-.cs-banner { background:rgba(245,166,35,.06); border:1px solid rgba(245,166,35,.2); border-radius:10px; padding:10px 16px; margin-bottom:16px; font-size:0.82rem; color:#6a7a9a; font-weight:500; }
+.cs-banner { background:rgba(245,166,35,.06); border:1px solid rgba(245,166,35,.2); border-radius:10px; padding:10px 16px; margin-bottom:16px; font-size:0.82rem; color:#b0c0d8; font-weight:500; }
 
 /* ── Metric override ── */
 div[data-testid="stMetric"] { background:#0d1526 !important; border-radius:10px; padding:12px 14px; border:1px solid #1c2b44 !important; }
-div[data-testid="stMetric"] label { color:#3a4a6a !important; }
+div[data-testid="stMetric"] label { color:#a0b0c8 !important; }
 div[data-testid="stMetric"] div[data-testid="stMetricValue"] { color:#fff !important; }
 
 /* ── Button ── */
@@ -437,7 +437,7 @@ div[role="listbox"] { background:#111e32 !important; border:1px solid #1c2b44 !i
 /* ── Text dark ── */
 h1, h2, h3, h4, h5, h6 { color:#fff !important; }
 .stMarkdown p { color:#8899bb; }
-.stCaption { color:#4a5a7a !important; }
+.stCaption { color:#8899bb !important; }
 label[data-testid="stWidgetLabel"] { color:#8899bb !important; }
 
 /* ── 資金アラート ── */
@@ -454,7 +454,7 @@ label[data-testid="stWidgetLabel"] { color:#8899bb !important; }
 .gn-goal-card:hover { border-color:#f5a623; }
 .gn-goal-card .gn-title { font-size:0.95rem; font-weight:700; color:#f5a623; margin-bottom:6px; }
 .gn-goal-card .gn-value { font-size:1.4rem; font-weight:800; color:#fff; }
-.gn-goal-card .gn-sub { font-size:0.78rem; color:#5a6a8a; margin-top:4px; }
+.gn-goal-card .gn-sub { font-size:0.78rem; color:#a0b0c8; margin-top:4px; }
 .gn-lever-row {
     background:#0d1526; border:1px solid #1c2b44; border-radius:10px;
     padding:14px 18px; margin:6px 0; display:flex; align-items:center; gap:14px;
@@ -462,7 +462,7 @@ label[data-testid="stWidgetLabel"] { color:#8899bb !important; }
 .gn-lever-row .lever-rank { font-size:1.2rem; font-weight:800; color:#f5a623; min-width:28px; }
 .gn-lever-row .lever-name { font-size:0.88rem; font-weight:600; color:#c8d8f0; }
 .gn-lever-row .lever-impact { font-size:0.78rem; color:#4ade80; }
-.gn-lever-row .lever-current { font-size:0.78rem; color:#5a6a8a; }
+.gn-lever-row .lever-current { font-size:0.78rem; color:#a0b0c8; }
 .gn-benchmark-bar { height:8px; border-radius:4px; background:#1c2b44; position:relative; margin:4px 0; }
 .gn-benchmark-fill { height:8px; border-radius:4px; position:absolute; left:0; top:0; }
 .gn-section-header { font-size:1.05rem; font-weight:700; color:#fff; margin:20px 0 10px; padding-bottom:6px; border-bottom:2px solid #f5a62344; }
@@ -472,7 +472,6 @@ label[data-testid="stWidgetLabel"] { color:#8899bb !important; }
 # ─────────────────────────────────────────────
 # 業種テンプレート（A4 拡張：選択式コスト項目）
 # ─────────────────────────────────────────────
-# 変動費マスター：全業種共通のコスト項目プール
 VARIABLE_COST_ITEMS = {
     "仕入原価":       {"key": "vc_cogs",     "unit": "円/件", "desc": "商品の仕入れ・製造原価"},
     "配送料":         {"key": "vc_shipping",  "unit": "円/件", "desc": "配送・物流費用"},
@@ -578,7 +577,7 @@ MONTH_LABELS = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","
 # ─── 減価償却の種別定義 (A3) ───
 DEPRECIATION_CATEGORIES = {
     "設備・機械": {"useful_life": 7, "examples": "製造機械、加工設備、厨房設備"},
-    "IT資産": {"useful_life": 4, "examples": "PC、サーバー、ネットワーク機器"},
+    "IT資產": {"useful_life": 4, "examples": "PC、サーバー、ネットワーク機器"},
     "車両": {"useful_life": 6, "examples": "営業車、配送トラック"},
     "不動産（建物）": {"useful_life": 22, "examples": "店舗内装、オフィス内装"},
     "ソフトウェア": {"useful_life": 5, "examples": "自社開発ソフト、ライセンス"},
@@ -1374,8 +1373,51 @@ with tab_sim:
         if rec_m is None and cum_profit > 0:
             rec_m = m
 
-        # CF（減価償却は非現金なのでCFには加算）
+        # CF（減価償剔費は非現金なのでCFには加算）
         cf_in = total_sales
+        cf_out = abs(vc) + ad_budget_monthly + total_fixed_with_hire + tax_amount
+        # 設備投資の玾金支出
+        for asset in dep_assets:
+            if m == max(1, asset["start_month"]):
+                cf_out += asset["cost"]
+
+        s_buf.append(cf_in)
+        e_buf.append(cf_out)
+        cash = cash + s_buf.pop(0) - e_buf.pop(0)
+
+        # B4: 資金調達アラート
+        if cash_alert_month is None and cash < fundraise_alert:
+            cash_alert_month = m
+
+        rows.append({
+            "月": f"{m}ヶ月目", "月番号": m, "暦月": MONTH_LABELS[cal],
+            "年": ((m - 1) // 12) + 1,
+            "季節係数": sf, "新規獲得": total_new, "解約数": total_churn,
+            "アクティブ顧客数": total_active, "人員数": total_headcount,
+            "販売数": total_units, "売上高": total_sales,
+            "変動費": vc, "限界利益": gp,
+            "広告宣伝費": ad_budget_monthly,
+            "人件費（追加採用）": hire_cost,
+            "固定費合計": total_fixed_with_hire,
+            "減価償剔費": monthly_depreciation,
+            "営業利益": op, "累積利益": cum_profit,
+            "税額": tax_amount, "税シールド": tax_shield,
+            "税引後利益": net_income, "累積税引後利益": cum_profit_after_tax,
+            "損益分岐点売上": bep,
+            "キャッシュ残高": cash,
+            "費用_変動費": vc,
+            "費用_広告宣伝費": ad_budget_monthly,
+            "費用_固定費": total_fixed_with_hire,
+            "費用_減価償剔費": monthly_depreciation,
+        })
+
+    df = pd.DataFrame(rows)
+
+    # ─── 年次集計 (常に計算：Excel出力・Growth Navigator用) ───
+    df_yearly = df.groupby("年").agg({
+        "売上高": "sum", "変動費": "sum", "限界利益": "sum",
+        "広告宣伝費": "sum", "固定費合計": "sum", "減価償剔費": "sum",
+        "営業利益": "sum", "累n = total_sales
         cf_out = abs(vc) + ad_budget_monthly + total_fixed_with_hire + tax_amount
         # 設備投資の現金支出
         for asset in dep_assets:
@@ -1450,33 +1492,7 @@ with tab_sim:
                 対策: ① エクイティ調達 ② デットファイナンス ③ コスト削減 ④ 売上加速
             </div>
         </div>
-        """, unsafe_allow_html=True)
-
-    # ─── ユニットエコノミクス ───
-    st.markdown('<div class="section-title">ユニットエコノミクス</div>', unsafe_allow_html=True)
-    margin_per_unit = weighted_price - vc_per_unit_fixed - weighted_price * vc_pct_of_sales
-    margin_pct = margin_per_unit / weighted_price * 100 if weighted_price > 0 else 0
-    cac_val = cpa
-    ltv_val = ltv
-    ltv_cac_ratio = ltv_val / cac_val if cac_val > 0 else 999
-    payback = cac_val / margin_per_unit if margin_per_unit > 0 else 999
-    avg_life = 1 / weighted_churn if weighted_churn > 0 else 120
-
-    ue_html = '<div class="kpi-grid">'
-    ue_html += f"""<div class="kpi-card accent">
-        <div class="label">客単価 (ARPU)</div><div class="value">¥{weighted_price:,.0f}</div>
-        <div class="delta neutral">加重平均（{len(rev_sources)}収益源）</div></div>"""
-    ue_html += f"""<div class="kpi-card {'success' if margin_pct > 50 else 'warn'}">
-        <div class="label">限界利益 / 件</div><div class="value">¥{margin_per_unit:,.0f}</div>
-        <div class="delta {'up' if margin_pct > 50 else 'down'}">利益率 {margin_pct:.1f}%</div></div>"""
-    ue_html += f"""<div class="kpi-card accent">
-        <div class="label">LTV (顧客生涯価値)</div><div class="value">¥{ltv_val:,.0f}</div>
-        <div class="delta neutral">平均 {avg_life:.1f}ヶ月</div></div>"""
-    ue_html += f"""<div class="kpi-card {'success' if cac_val < ltv_val / 3 else 'danger'}">
-        <div class="label">CAC (獲得単価)</div><div class="value">¥{cac_val:,}</div>
-        <div class="delta {'up' if cac_val < ltv_val / 3 else 'down'}">CPA = ¥{cpa:,}</div></div>"""
-    ue_html += f"""<div class="kpi-card {'success' if ltv_cac_ratio >= 3 else 'danger'}">
-        <div class="label">LTV / CAC</div><div class="value">{ltv_cac_ratio:.1f}x</div>
+ lass="label">LTV / CAC</div><div class="value">{ltv_cac_ratio:.1f}x</div>
         <div class="delta {'up' if ltv_cac_ratio >= 3 else 'down'}">{'✓ 健全 (3x以上)' if ltv_cac_ratio >= 3 else '▽ 改善が必要 (3x未満)'}</div></div>"""
     ue_html += f"""<div class="kpi-card {'success' if payback < 12 else 'warn'}">
         <div class="label">ペイバック期間</div><div class="value">{payback:.1f}ヶ月</div>
@@ -1680,7 +1696,7 @@ with tab_sim:
         base = quick_kpi()
         levers = [
             {"name": "単価 +10%",       "key": "unit_price",       "params": {"price_mult": 1.1},   "direction": "↑ 単価を上げる"},
-            {"name": "CPA -10%",         "key": "cpa",             "params": {"cpa_mult": 0.9},     "direction": "↓ 獲得コストを下げる"},
+            {"name": "CPA -10%",         "key": "cpa",             "params": {"cpa_mult": 0.9},     "direction": "↓ 獲得コストを上げる"},
             {"name": "解約率 -10%",      "key": "churn_rate",      "params": {"churn_mult": 0.9},   "direction": "↓ 解約を減らす"},
             {"name": "オーガニック +10%", "key": "organic_start",   "params": {"organic_mult": 1.1}, "direction": "↑ 自然流入を増やす"},
             {"name": "固定費 -10%",      "key": "fc_total",        "params": {"fc_mult": 0.9},      "direction": "↓ 固定費を削る"},
@@ -1706,7 +1722,7 @@ with tab_sim:
         levers_sorted = sorted(levers, key=lambda x: abs(x["impact"]), reverse=True)
 
         for rank, lv in enumerate(levers_sorted, 1):
-            impact_color = "#4ade80" if lv["impact"] > 0 else "#f87171" if lv["impact"] < 0 else "#5a6a8a"
+            impact_color = "#4ade80" if lv["impact"] > 0 else "#f87171" if lv["impact"] < 0 else "#a0b0c8"
             lc1, lc2, lc3 = st.columns([5, 3, 2])
             with lc1:
                 st.markdown(f"""<div class="gn-lever-row">
@@ -1783,7 +1799,7 @@ with tab_sim:
                 </div>
                 <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
                     <span style="color:#8899bb;font-size:0.78rem;">あなた: {bi['actual']:,.1f}{bi['unit']}</span>
-                    <span style="color:#5a6a8a;font-size:0.78rem;">業種平均: {bi['benchmark']:,.1f}{bi['unit']}</span>
+                    <span style="color:#a0b0c8;font-size:0.78rem;">業種平均: {bi['benchmark']:,.1f}{bi['unit']}</span>
                 </div>
                 <div class="gn-benchmark-bar"><div class="gn-benchmark-fill" style="width:{fill_w:.0f}%;background:{bar_color};"></div></div>
             </div>""", unsafe_allow_html=True)
@@ -1807,11 +1823,11 @@ with tab_sim:
 
     graph_col1, graph_col2 = st.columns([3, 1])
     with graph_col2:
-        default_view = "年単位" if sim_months >= 60 else "月単位"
-        view_mode = st.radio("表示単位", ["月単位", "年単位"], horizontal=True, key="view_mode",
-                             index=0 if default_view == "月単位" else 1)
+        default_view = "年単低" if sim_months >= 60 else "月単佋"
+        view_mode = st.radio("表示単佋", ["月単佋", "年単佋"], horizontal=True, key="view_mode",
+                             index=0 if default_view == "月単佋" else 1)
 
-    if view_mode == "年単位":
+    if view_mode == "年単佋":
         df_yearly["月"] = df_yearly["年"].apply(lambda y: f"{int(y)}年目")
         df_yearly["月番号"] = df_yearly["年"]
         df_view = df_yearly
@@ -1865,7 +1881,7 @@ with tab_sim:
         # IMPROVEMENT 1: キャッシュフロー with 凡例 + B4: アラートライン
         cf_chart = alt.Chart(df_view).mark_area(opacity=0.5).encode(
             x=alt.X(x_field, title=x_title),
-            y=alt.Y("キャッシュ残高:Q", axis=alt.Axis(format="~s", title="¥ キャッシュ残高")),
+            y=alt.Y("キャッシュ残高:Q", axis=alt.Axis(format="~s", title="¥ キャッシュ残高"))),
             color=alt.condition(alt.datum.キャッシュ残高 > 0, alt.value("#2196F3"), alt.value("#DC2626")),
             tooltip=["月", alt.Tooltip("キャッシュ残高:Q", format=",")]
         )
@@ -1982,7 +1998,7 @@ with tab_sim:
         ])).mark_point(size=0).encode(
             color=alt.Color("label:N",
                 scale=alt.Scale(
-                    domain=["営業利益", "税引後利益", "税額", "税シールド（償却）"],
+                    domain=["営業利益", "税引後利益", "税額", "税シールド（䷗即）"],
                     range=["#2196F3", "#16A34A", "#EF4444", "#8B5CF6"]),
                 legend=alt.Legend(title="凡例", orient="top"))
         )
@@ -2040,7 +2056,7 @@ with tab_sim:
             x=alt.X("月番号:Q", title="月"),
             y=alt.Y("金額:Q", axis=alt.Axis(format="~s", title="¥ 金額")),
             color=alt.Color("指標:N",
-                scale=alt.Scale(domain=["LTV", "CAC"], range=["#2196F3", "#EF4444"]),
+                scale=alt.Scale(domain=["LTV", "CAC"], range=["#2196F3", "#EF4444"],
                 legend=alt.Legend(title="指標", orient="top")),
             tooltip=["月番号", "指標", alt.Tooltip("金額:Q", format=",")]
         )
@@ -2111,7 +2127,7 @@ with tab_sim:
         tornado_df = pd.DataFrame(tornado_data)
         tornado_chart = alt.Chart(tornado_df).mark_bar().encode(
             x=alt.X("Impact:Q", title="営業利益への影響 (¥)"),
-            y=alt.Y("Parameter:N", title="パラメータ", sort=list(sens_pivot["parameter"])),
+            y=alt.Y("Parameter:N", title="パラメーター", sort=list(sens_pivot["parameter"])),
             color=alt.Color("Direction:N",
                 scale=alt.Scale(domain=["Low", "High"], range=["#EF4444", "#16A34A"]),
                 legend=alt.Legend(title="変動方向", orient="right")),
@@ -2122,7 +2138,7 @@ with tab_sim:
     with g9:
         st.dataframe(df_view, use_container_width=True)
 
-    # ─── エクスポート ───
+    # ━━━ エクスポート ━━━
     st.markdown('<div class="section-title">データエクスポート</div>', unsafe_allow_html=True)
     ec1, ec2, ec3 = st.columns(3)
     with ec1:
@@ -2150,13 +2166,13 @@ with tab_sim:
         st.button("PDF レポート（Phase 2）", disabled=True, use_container_width=True)
 
 
-# ═══════════════════════════════════════════════
-# TAB 2 — AI アドバイザー（UI モック）
-# ═══════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# TAB 2 ━ AI アドバイザー（UI モック）
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 with tab_ai:
     st.markdown("""
     <div class="cs-banner">
-        ⚡ <strong>Coming Soon — Phase 2</strong>
+        ⚡ <strong>Coming Soon ━ Phase 2</strong>
         このタブは機能イメージです。ヒアリング用プレビューとしてご確認ください。
     </div>
     """, unsafe_allow_html=True)
@@ -2167,16 +2183,16 @@ with tab_ai:
     st.markdown("""
     <div style="max-width:680px; margin-top:8px;">
         <div class="ai-bubble">
-            <div class="ai-label">Biz Maker AI · 分析結果</div>
+            <div class="ai-label">Biz Maker AI ・ 分析結果</div>
             入力された事業計画を分析しました。以下が主な所見です。<br><br>
             <strong>1. キャッシュフロー警告</strong><br>
-            現在の入金サイクルと支払サイクルのズレにより、4〜6ヶ月目にキャッシュがタイトになる可能性があります。
-            運転資金として 300〜500万円の予備を確保することを推奨します。<br><br>
+            現在の入金サイクルと支払サイクルのズレにより、4～6ヶ月目にキャッシュがタイトになる可能性があります。
+            運転資金として 300～500万円の予備を確保することを推奨します。<br><br>
             <strong>2. LTV / CAC 比率</strong><br>
             現在の比率は 2.4x で、業界健全ラインの 3.0x を下回っています。
-            解約率を 1〜2% 改善するだけで比率が 3.6x まで改善し、収益性が大幅に向上します。<br><br>
+            解約率を 1～2% 改善するだけで比率が 3.6x まで改善し、収益性が大幅に向上します。<br><br>
             <strong>3. 季節変動リスク</strong><br>
-            SaaS業種の場合、7〜8月に売上が約 5% 低下する傾向があります。
+            SaaS業種の場合、7～8月に売上が約 5% 低下する傾向があります。
             この時期に合わせた年次契約プランの提供を検討してみてください。
         </div>
     </div>
@@ -2202,7 +2218,7 @@ with tab_ai:
     for col, (q, a) in zip(qa_cols, questions):
         with col:
             with st.expander(q):
-                st.markdown(f"<div style='font-size:0.83rem;color:#374151;line-height:1.6;'>{a}<br><br><em style='color:#9CA3AF;'>Phase 2 では AIが事業計画データを参照した上で回答します。</em></div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='font-size:0.83rem;color:#c8d8f0;line-height:1.6;'>{a}<br><br><em style='color:#8899bb;'>Phase 2 では AI が事業計画データを参照した上で回答します。</em></div>", unsafe_allow_html=True)
 
     st.markdown('<div class="section-title">会話例プレビュー</div>', unsafe_allow_html=True)
     st.markdown("""
@@ -2224,13 +2240,13 @@ with tab_ai:
     """, unsafe_allow_html=True)
 
 
-# ═══════════════════════════════════════════════
-# TAB 3 — 専門家に相談（UI モック）
-# ═══════════════════════════════════════════════
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# TAB 3 ━ 専門家に相談（UI モック）
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 with tab_cons:
     st.markdown("""
     <div class="cs-banner">
-        ⚡ <strong>Coming Soon — Phase 2</strong>
+        ⚡ <strong>Coming Soon ━ Phase 2</strong>
         このタブは機能イメージです。ヒアリング用プレビューとしてご確認ください。
     </div>
     """, unsafe_allow_html=True)
@@ -2242,7 +2258,7 @@ with tab_cons:
     with fc1:
         st.selectbox("専門分野", ["すべて","財務・会計","マーケティング","法務","IT・開発","人事・組織"])
     with fc2:
-        st.selectbox("料金帯", ["すべて","〜5,000円/30分","5,000〜10,000円","10,000円〜"])
+        st.selectbox("料金帯", ["すべて","～5,000円/30分","5,000～10,000円","10,000円～"])
     with fc3:
         st.selectbox("評価", ["すべて","★ 4.5以上","★ 4.0以上"])
     with fc4:
@@ -2277,24 +2293,24 @@ with tab_cons:
                     <div class="cons-desc">{cons['desc']}</div>
                     <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
                         <div class="cons-meta">★ {cons['rating']} ({cons['reviews']} 件のレビュー)</div>
-                        <div class="cons-meta" style="font-weight:600;color:#1A1A2E;">{cons['price']}</div>
+                        <div class="cons-meta" style="font-weight:600;color:#c8d8f0;">{cons['price']}</div>
                         <div>{''.join(f'<span class="tag">{t}</span>' for t in cons['tags'])}</div>
                     </div>
                 </div>
             </div>
-        </div>
+        </div>>
         """, unsafe_allow_html=True)
-        if st.button(f"相談を予約する — {cons['name']}", key=f"book_{cons['name']}"):
+        if st.button(f"相談を予約する ━ {cons['name']}", key=f"book_{cons['name']}"):
             st.info("Phase 2 では専門家のカレンダーと連携して直接予約できます。")
 
 
-# ═══════════════════════════════════════════════
-# TAB 4 — コミュニティ（UI モック）
-# ═══════════════════════════════════════════════
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# TAB 4 ━ コミュニティ（UI モック）
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 with tab_sns:
     st.markdown("""
     <div class="cs-banner">
-        ⚡ <strong>Coming Soon — Phase 2</strong>
+        ⚡ <strong>Coming Soon ━ Phase 2</strong>
         このタブは機能イメージです。ヒアリング用プレビューとしてご確認ください。
     </div>
     """, unsafe_allow_html=True)
@@ -2310,13 +2326,13 @@ with tab_sns:
 
     st.markdown("---")
     posts = [
-        {"initials":"SM","name":"佐藤 美咲","sub":"SaaS · 創業2年目",
-         "content":"解約率を 8% → 2.8% に改善できました\n施策は「オンボーディングフロー」の抜本的な見直し。特に初回ログインから7日間のメール自動化が効きました。",
+        {"initials":"SM","name":"佐藤 美咲","sub":"SaaS ・ 創業2年目",
+         "content":"解約率を 8% ➜ 2.8% に改善できました\n施策は「オンボーディングフロー」の抜本的な見直し。特に初回ログインから7日間のメール自動化が効きました。",
          "tags":["#SaaS","#解約率改善"],"likes":38,"comments":14,"time":"2時間前"},
-        {"initials":"KT","name":"高橋 健太","sub":"飲食店 · 2店舗運営",
-         "content":"このシミュレーターで12月の季節変動を入れてシミュレーションしてみたら、固定費の比率が高すぎることに気づきました。業務委託の比率を見直して月30万円のコスト改善ができそうです。",
+        {"initials":"KT","name":"高橋 健太","sub":"飲食店 ・ 2店舗運営",
+         "content":"このシミュレーターで12月の季節変動を入れてシミュレーションしてみたら、固定費の比率が高すぎることに気づきました。業務委託の比率を見直して約30万円のコスト改善ができそうです。",
          "tags":["#飲食","#固定費削減"],"likes":22,"comments":9,"time":"5時間前"},
-        {"initials":"RW","name":"渡辺 翔","sub":"コンサルティング · 独立1年目",
+        {"initials":"RW","name":"渡辺 翔","sub":"コンサルティング ・ 独立1年目",
          "content":"LTV/CAC が 2.1x で悩んでいます。コンサルビジネスでCACを下げた方法を教えてください。今は紹介プログラムの導入を検討中です。",
          "tags":["#コンサル","#LTV","#CAC"],"likes":45,"comments":21,"time":"1日前"},
     ]
@@ -2329,7 +2345,7 @@ with tab_sns:
                 <div class="post-avatar">{post['initials']}</div>
                 <div class="post-meta">
                     <div class="name">{post['name']}</div>
-                    <div class="sub">{post['sub']} · {post['time']}</div>
+                    <div class="sub">{post['sub']} ・ {post['time']}</div>
                 </div>
             </div>
             <div class="post-content">{content_html}</div>
@@ -2342,12 +2358,16 @@ with tab_sns:
             </div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button(f"コメントする — {post['name']}", key=f"cmt_{post['name']}", type="secondary"):
+        if st.button(f"コメントする ━ {post['name']}", key=f"cmt_{post['name']}", type="secondary"):
             st.info("Phase 2 で実装予定です。")
 
-# ─── フッター ───
+# ━━━ フッター ━━━
 st.markdown("""
-<div style="margin-top:3rem;padding-top:1rem;border-top:1px solid #E8ECF0;text-align:center;color:#9CA3AF;font-size:0.75rem;">
-    Biz Maker — ビジネス共創プラットフォーム v7.0 — Growth Navigator &nbsp;|&nbsp; Phase 1 Enhanced &nbsp;|&nbsp; Powered by Streamlit
+<div style="margin-top:3rem;padding-top:1rem;border-top:1px solid #1c2b44;text-align:center;color:#8899bb;font-size":0.75rem;">
+    Biz Maker ━ ビジネス共創プラットフォーム v7.0 ━ Growth Navigator &nbsp;|&nbsp; Phase 1 Enhanced &nbsp;|&nbsp; Powered by Streamlit
+</div>
+""", unsafe_allow_html=True)
+:0.75rem;">
+    Biz Maker ━ ビジネス共創プラットフォーム v7.0 ━ Growth Navigator &nbsp;|&nbsp; Phase 1 Enhanced &nbsp;|&nbsp; Powered by Streamlit
 </div>
 """, unsafe_allow_html=True)
