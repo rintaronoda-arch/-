@@ -1751,7 +1751,7 @@ with tab_sim:
 
     # ── 業種ベンチマーク比較 ──
     st.markdown('<div class="gn-section-header">📈 業種ベンチマーク比較</div>', unsafe_allow_html=True)
-    bench = INDUSTRY_BENCHMARKS.get(industry_name, INDUSTRY_BENCHMARKS["カスタム"])
+    bench = INDUSTRY_BENCHMARKS.get(industry, INDUSTRY_BENCHMARKS["カスタム"])
 
     actual_churn_pct = weighted_churn * 100
     actual_arpu = weighted_price
@@ -2135,8 +2135,8 @@ with tab_sim:
                 rev_sources=[{"name": s, "share": 1.0 / max(1, len(revenue_sources))} for s in revenue_sources],
                 fc_values_dict={n: fc_values.get(n, 0) for n in selected_fc_items} if 'selected_fc_items' in dir() else {},
                 vc_values_dict={n: vc_values.get(n, 0) for n in selected_vc_items} if 'selected_vc_items' in dir() else {},
-                industry_name=industry_name,
-                company_name=industry_name,
+                industry_name=industry,
+                company_name=industry,
             )
             st.download_button("Excel P&L ダウンロード", excel_bytes, "BizMaker_PL.xlsx",
                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
