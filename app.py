@@ -757,11 +757,11 @@ with tab_sim:
             # ════ シンプルモード ════
             s2a, s2b = st.columns(2)
             with s2a:
-                ad_budget = st.number_input(f"月間広告予算{annual_label} (円)", value=tmpl["ad_budget"] * annual_divisor, step=100_000)
+                ad_budget = st.number_input(f"月間広告予算{annual_label} (円)", value=tmpl["ad_budget"] * annual_divisor, step=100_000, key="ad_budget_input")
                 ad_budget_monthly = ad_budget / annual_divisor
-                cpa = st.number_input("CPA (円)", value=tmpl["cpa"], step=100)
+                cpa = st.number_input("CPA (円)", value=tmpl["cpa"], step=100, key="cpa")
             with s2b:
-                organic_start = st.number_input("自然流入獲得数 (件/月)", value=tmpl["organic_start"], step=10)
+                organic_start = st.number_input("自然流入獲得数 (件/月)", value=tmpl["organic_start"], step=10, key="organic_start")
                 org_growth_pct = st.slider("自然流入月次成長率 (%)", 0.0, 20.0, tmpl["organic_growth"], 0.5)
                 organic_growth = 1 + org_growth_pct / 100
                 k_factor = st.slider("バイラル係数 K factor", 0.0, 0.9, 0.0, 0.05,
@@ -1720,23 +1720,29 @@ with tab_sim:
                 apply_key = f"gn_apply_{lv['key']}"
                 if st.button("適用", key=apply_key, help=f"{lv['name']} をサイドバーに反映"):
                     if lv["key"] == "unit_price":
-                        st.session_state["unit_price"] = int(weighted_price * 1.1)
+                        for _ri in range(st.session_state.get("n_revenue", 1)):
+                            _k = f"rprice_{_ri}"
+                            if _k in st.session_state:
+                                st.session_state[_k] = int(st.session_state[_k] * 1.1)
                     elif lv["key"] == "cpa":
-                        st.session_state["cpa"] = int(cpa * 0.9)
+                        if "cpa" in st.session_state:
+                            st.session_state["cpa"] = int(st.session_state["cpa"] * 0.9)
                     elif lv["key"] == "churn_rate":
-                        for src_name in revenue_sources:
-                            cr_key = f"churn_{src_name}"
-                            if cr_key in st.session_state:
-                                st.session_state[cr_key] = round(st.session_state[cr_key] * 0.9, 2)
+                        for _ri in range(st.session_state.get("n_revenue", 1)):
+                            _k = f"rchurn_{_ri}"
+                            if _k in st.session_state:
+                                st.session_state[_k] = round(float(st.session_state[_k]) * 0.9, 2)
                     elif lv["key"] == "organic_start":
-                        st.session_state["organic_start"] = int(organic_start * 1.1)
+                        if "organic_start" in st.session_state:
+                            st.session_state["organic_start"] = int(st.session_state["organic_start"] * 1.1)
                     elif lv["key"] == "fc_total":
                         for fc_name in selected_fc_items:
                             fc_k = FIXED_COST_ITEMS[fc_name]["key"]
                             if fc_k in st.session_state:
                                 st.session_state[fc_k] = int(st.session_state[fc_k] * 0.9)
                     elif lv["key"] == "ad_budget":
-                        st.session_state["ad_budget"] = int(ad_budget_monthly * 1.1)
+                        if "ad_budget_input" in st.session_state:
+                            st.session_state["ad_budget_input"] = int(st.session_state["ad_budget_input"] * 1.1)
                     st.rerun()
 
         # ── 複合効果 ──
