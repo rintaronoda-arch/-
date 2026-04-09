@@ -1668,7 +1668,7 @@ with tab_sim:
         # 簡易月次計算
         sim_active = 0
         sim_total_profit = 0
-        sim_cash = initial_cash
+        sim_cash = initial_inv
         for m in range(1, sim_months + 1):
             new_paid = int(sim_ad / sim_cpa) if sim_cpa > 0 else 0
             new_organic = int(sim_organic * (1 + organic_growth / 100) ** ((m - 1) / 12))
