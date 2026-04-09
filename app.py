@@ -313,38 +313,38 @@ body, .stApp { background:#0b1220 !important; }
 section[data-testid="stSidebar"] { background:#0d1526 !important; }
 
 /* ── ナビバー ── */
-.top-nav { display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0; margin-bottom:1rem; border-bottom:1px solid #1c2b44; }
+.top-nav { display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0; margin-bottom:1rem; border-bottom:1px solid rgba(245,166,35,0.35); }
 .top-nav .logo { font-size:2.0rem; font-weight:800; color:#fff; letter-spacing:-0.5px; }
 .top-nav .logo span { color:#f5a623; }
-.top-nav .tagline { font-size:0.85rem; color:#8899bb; margin-top:2px; }
+.top-nav .tagline { font-size:0.85rem; color:#a8bcd0; margin-top:2px; }
 .nav-badge { background:#1c2b44; color:#f5a623; border-radius:20px; padding:2px 10px; font-size:0.7rem; font-weight:700; border:1px solid rgba(245,166,35,.35); }
 
 /* ── KPIカード ── */
 .kpi-grid { display:flex; gap:12px; flex-wrap:wrap; margin:1rem 0; }
-.kpi-card { flex:1; min-width:140px; background:#0d1526; border:1px solid #1c2b44; border-radius:12px; padding:14px 16px; }
-.kpi-card .label { font-size:0.72rem; color:#8899bb; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
+.kpi-card { flex:1; min-width:140px; background:#111e32; border:1px solid #1e3050; border-radius:12px; padding:14px 16px; }
+.kpi-card .label { font-size:0.72rem; color:#b0c4d8; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
 .kpi-card .value { font-size:1.35rem; font-weight:700; color:#fff; margin:4px 0 2px; line-height:1.2; }
 .kpi-card .delta { font-size:0.75rem; }
 .kpi-card .delta.up   { color:#34d297; }
 .kpi-card .delta.down { color:#f87171; }
-.kpi-card .delta.neutral { color:#8899bb; }
-.kpi-card.accent  { border-left:3px solid #f5a623; }
-.kpi-card.success { border-left:3px solid #34d297; }
-.kpi-card.danger  { border-left:3px solid #f87171; }
-.kpi-card.warn    { border-left:3px solid #f5a623; }
+.kpi-card .delta.neutral { color:#9ab8cc; }
+.kpi-card.accent  { border-left:4px solid #f5a623; }
+.kpi-card.success { border-left:4px solid #34d297; }
+.kpi-card.danger  { border-left:4px solid #f87171; }
+.kpi-card.warn    { border-left:4px solid #f5a623; }
 
 /* ── セクションタイトル ── */
 .section-title { font-size:0.8rem; font-weight:700; color:#f5a623; text-transform:uppercase; letter-spacing:1px; margin:1.4rem 0 0.6rem; padding-bottom:6px; border-bottom:1px solid #1c2b44; }
 
 /* ── 改善提案カード ── */
-.advice-card { background:#0d1526; border:1px solid #1c2b44; border-radius:10px; padding:14px 16px; margin:6px 0; }
+.advice-card { background:#111e32; border:1px solid #1e3050; border-radius:10px; padding:14px 16px; margin:6px 0; }
 .advice-card .advice-title { font-size:0.8rem; font-weight:600; color:#b0c0d8; margin-bottom:4px; }
 .advice-card .advice-value { font-size:1.05rem; font-weight:700; color:#fff; }
 .advice-card .advice-desc { font-size:0.75rem; color:#8899bb; margin-top:3px; }
 
 /* ── ステップバー ── */
 .step-bar { display:flex; gap:0; margin:0.8rem 0 1.2rem; }
-.step-item { flex:1; text-align:center; padding:8px 4px; font-size:0.72rem; font-weight:500; border-bottom:3px solid #1c2b44; color:#8899bb; }
+.step-item { flex:1; text-align:center; padding:8px 4px; font-size:0.72rem; font-weight:500; border-bottom:3px solid #1c2b44; color:#9ab8d0; }
 .step-item.active { border-bottom:3px solid #f5a623; color:#f5a623; font-weight:700; }
 .step-item.done   { border-bottom:3px solid #34d297; color:#34d297; }
 
@@ -397,7 +397,7 @@ section[data-testid="stSidebar"] { background:#0d1526 !important; }
 
 /* ── Metric override ── */
 div[data-testid="stMetric"] { background:#0d1526 !important; border-radius:10px; padding:12px 14px; border:1px solid #1c2b44 !important; }
-div[data-testid="stMetric"] label { color:#a0b0c8 !important; }
+div[data-testid="stMetric"] label { color:#b8cce0 !important; }
 div[data-testid="stMetric"] div[data-testid="stMetricValue"] { color:#fff !important; }
 
 /* ── Button ── */
@@ -407,16 +407,18 @@ div[data-testid="stButton"] > button:hover { background:#253d5c !important; bord
 /* ── Tab Orange Pill Style ── */
 div[data-testid="stTabs"] [data-baseweb="tab-list"] { gap:14px; border-bottom:none !important; background:transparent; padding:10px 0; }
 div[data-testid="stTabs"] [data-baseweb="tab"] {
-    background:linear-gradient(180deg,#F97316 0%,#EA580C 100%); color:#fff !important;
-    border-radius:50px; padding:14px 32px; font-weight:700; font-size:0.95rem;
-    border:none !important; letter-spacing:0.5px;
-    box-shadow:0 4px 14px rgba(234,88,12,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+    background:rgba(249,115,22,0.12); color:#f5a623 !important;
+    border-radius:50px; padding:14px 32px; font-weight:600; font-size:0.95rem;
+    border:1.5px solid rgba(249,115,22,0.45) !important; letter-spacing:0.5px;
+    box-shadow:none;
     transition:all 0.25s ease; cursor:pointer; position:relative; overflow:hidden;
 }
-div[data-testid="stTabs"] [data-baseweb="tab"]::before { content:""; position:absolute; top:0; left:0; right:0; bottom:0; background:linear-gradient(180deg,rgba(255,255,255,0.12) 0%,transparent 60%); border-radius:50px; pointer-events:none; }
-div[data-testid="stTabs"] [data-baseweb="tab"]:hover { background:linear-gradient(180deg,#FB923C 0%,#F97316 100%); box-shadow:0 6px 22px rgba(249,115,22,0.45); transform:translateY(-2px); }
-div[data-testid="stTabs"] [data-baseweb="tab"][aria-selected="true"] { background:linear-gradient(180deg,#EA580C 0%,#C2410C 100%) !important; box-shadow:0 2px 8px rgba(194,65,12,0.4), inset 0 2px 4px rgba(0,0,0,0.15) !important; transform:translateY(1px); }
+div[data-testid="stTabs"] [data-baseweb="tab"]::before { content:""; position:absolute; top:0; left:0; right:0; bottom:0; background:transparent; border-radius:50px; pointer-events:none; }
+div[data-testid="stTabs"] [data-baseweb="tab"]:hover { background:rgba(249,115,22,0.25); box-shadow:0 4px 16px rgba(249,115,22,0.25); transform:translateY(-1px); }
+div[data-testid="stTabs"] [data-baseweb="tab"][aria-selected="true"] { background:linear-gradient(180deg,#F97316 0%,#EA580C 100%) !important; color:#fff !important; border:none !important; box-shadow:0 4px 14px rgba(234,88,12,0.45), inset 0 1px 0 rgba(255,255,255,0.2) !important; transform:translateY(0); font-weight:700; }
 div[data-testid="stTabs"] [data-baseweb="tab-highlight"], div[data-testid="stTabs"] [data-baseweb="tab-border"] { display:none !important; }
+div[data-testid="stTabs"] [data-baseweb="tab"][aria-selected="true"] > div { color:#fff !important; }
+div[data-testid="stTabs"] [data-baseweb="tab"] > div { color:#f5a623 !important; }
 div[data-testid="stTabs"] [data-baseweb="tab"] > div { color:#fff !important; }
 
 /* ── Input dark override ── */
@@ -436,9 +438,9 @@ div[role="listbox"] { background:#111e32 !important; border:1px solid #1c2b44 !i
 
 /* ── Text dark ── */
 h1, h2, h3, h4, h5, h6 { color:#fff !important; }
-.stMarkdown p { color:#8899bb; }
-.stCaption { color:#8899bb !important; }
-label[data-testid="stWidgetLabel"] { color:#8899bb !important; }
+.stMarkdown p { color:#a8b8cc; }
+.stCaption { color:#9ab0c8 !important; }
+label[data-testid="stWidgetLabel"] { color:#c0d0e4 !important; }
 
 /* ── 資金アラート ── */
 .funding-alert { background:rgba(248,113,113,.07); border:1px solid rgba(248,113,113,.3); border-radius:12px; padding:16px 20px; margin:12px 0; }
@@ -447,22 +449,22 @@ label[data-testid="stWidgetLabel"] { color:#8899bb !important; }
 
 /* ── Growth Navigator ── */
 .gn-goal-card {
-    background:linear-gradient(135deg,#0d1526,#111e32);
-    border:1px solid #1c2b44; border-radius:12px; padding:18px 20px; margin:8px 0;
+    background:linear-gradient(135deg,#111e32,#152340);
+    border:1px solid #1e3050; border-radius:12px; padding:18px 20px; margin:8px 0;
     transition: border-color 0.2s;
 }
 .gn-goal-card:hover { border-color:#f5a623; }
 .gn-goal-card .gn-title { font-size:0.95rem; font-weight:700; color:#f5a623; margin-bottom:6px; }
 .gn-goal-card .gn-value { font-size:1.4rem; font-weight:800; color:#fff; }
-.gn-goal-card .gn-sub { font-size:0.78rem; color:#a0b0c8; margin-top:4px; }
+.gn-goal-card .gn-sub { font-size:0.78rem; color:#b0c8d8; margin-top:4px; }
 .gn-lever-row {
-    background:#0d1526; border:1px solid #1c2b44; border-radius:10px;
+    background:#111e32; border:1px solid #1e3050; border-radius:10px;
     padding:14px 18px; margin:6px 0; display:flex; align-items:center; gap:14px;
 }
 .gn-lever-row .lever-rank { font-size:1.2rem; font-weight:800; color:#f5a623; min-width:28px; }
 .gn-lever-row .lever-name { font-size:0.88rem; font-weight:600; color:#c8d8f0; }
 .gn-lever-row .lever-impact { font-size:0.78rem; color:#4ade80; }
-.gn-lever-row .lever-current { font-size:0.78rem; color:#a0b0c8; }
+.gn-lever-row .lever-current { font-size:0.78rem; color:#b0c4d8; }
 .gn-benchmark-bar { height:8px; border-radius:4px; background:#1c2b44; position:relative; margin:4px 0; }
 .gn-benchmark-fill { height:8px; border-radius:4px; position:absolute; left:0; top:0; }
 .gn-section-header { font-size:1.05rem; font-weight:700; color:#fff; margin:20px 0 10px; padding-bottom:6px; border-bottom:2px solid #f5a62344; }
@@ -1646,104 +1648,109 @@ with tab_sim:
             <div class="gn-sub">{gn_gap_desc}</div></div>""", unsafe_allow_html=True)
 
     # ── レバー感度分析 ──
-    if not gn_achieved:
+    # ── レバー感度分析（目標達成状況に関わらず常時表示）──
+    if gn_achieved:
+        st.markdown('<div class="gn-section-header">📊 改善レバー ランキング — さらに伸ばすには？</div>', unsafe_allow_html=True)
+        st.caption("目標達成中です！各レバーを10%さらに改善した場合の追加インパクトを確認できます。")
+    else:
         st.markdown('<div class="gn-section-header">📊 改善レバー ランキング</div>', unsafe_allow_html=True)
         st.caption("各パラメータを10%改善した場合のインパクトを自動計算。「適用」ボタンでサイドバーの値を即座に更新できます。")
 
-        def quick_kpi(price_mult=1.0, cpa_mult=1.0, churn_mult=1.0, organic_mult=1.0, fc_mult=1.0, ad_mult=1.0):
-            """簡易シミュレーション：指定倍率でKPIを再計算"""
-            sim_price = weighted_price * price_mult
-            sim_cpa = cpa * cpa_mult
-            sim_churn = weighted_churn * churn_mult
-            sim_organic = organic_start * organic_mult
-            sim_fc = total_fixed * fc_mult
-            sim_ad = ad_budget_monthly * ad_mult
-            # 簡易月次計算
-            sim_active = 0
-            sim_total_profit = 0
-            sim_cash = initial_cash
-            for m in range(1, sim_months + 1):
-                new_paid = int(sim_ad / sim_cpa) if sim_cpa > 0 else 0
-                new_organic = int(sim_organic * (1 + organic_growth / 100) ** ((m - 1) / 12))
-                new_total = new_paid + new_organic
-                sim_active = max(0, sim_active * (1 - sim_churn) + new_total)
-                sales_count = int(sim_active)
-                revenue = sales_count * sim_price
-                vc = sales_count * (vc_per_unit_fixed + sim_price * vc_pct_of_sales)
-                op_profit = revenue - vc - sim_fc - sim_ad
-                sim_total_profit += op_profit
-                sim_cash += op_profit
-            return {"final_profit": op_profit, "total_profit": sim_total_profit,
-                    "final_mau": int(sim_active), "final_cash": sim_cash,
-                    "ltv_cac": (sim_price / sim_churn if sim_churn > 0 else sim_price * 120) / sim_cpa if sim_cpa > 0 else 999}
 
-        base = quick_kpi()
-        levers = [
-            {"name": "単価 +10%",       "key": "unit_price",       "params": {"price_mult": 1.1},   "direction": "↑ 単価を上げる"},
-            {"name": "CPA -10%",         "key": "cpa",             "params": {"cpa_mult": 0.9},     "direction": "↓ 獲得コストを下げる"},
-            {"name": "解約率 -10%",      "key": "churn_rate",      "params": {"churn_mult": 0.9},   "direction": "↓ 解約を減らす"},
-            {"name": "オーガニック +10%", "key": "organic_start",   "params": {"organic_mult": 1.1}, "direction": "↑ 自然流入を増やす"},
-            {"name": "固定費 -10%",      "key": "fc_total",        "params": {"fc_mult": 0.9},      "direction": "↓ 固定費を削る"},
-            {"name": "広告費 +10%",      "key": "ad_budget",       "params": {"ad_mult": 1.1},      "direction": "↑ 広告投資を増やす"},
-        ]
+    def quick_kpi(price_mult=1.0, cpa_mult=1.0, churn_mult=1.0, organic_mult=1.0, fc_mult=1.0, ad_mult=1.0):
+        """簡易シミュレーション：指定倍率でKPIを再計算"""
+        sim_price = weighted_price * price_mult
+        sim_cpa = cpa * cpa_mult
+        sim_churn = weighted_churn * churn_mult
+        sim_organic = organic_start * organic_mult
+        sim_fc = total_fixed * fc_mult
+        sim_ad = ad_budget_monthly * ad_mult
+        # 簡易月次計算
+        sim_active = 0
+        sim_total_profit = 0
+        sim_cash = initial_cash
+        for m in range(1, sim_months + 1):
+            new_paid = int(sim_ad / sim_cpa) if sim_cpa > 0 else 0
+            new_organic = int(sim_organic * (1 + organic_growth / 100) ** ((m - 1) / 12))
+            new_total = new_paid + new_organic
+            sim_active = max(0, sim_active * (1 - sim_churn) + new_total)
+            sales_count = int(sim_active)
+            revenue = sales_count * sim_price
+            vc = sales_count * (vc_per_unit_fixed + sim_price * vc_pct_of_sales)
+            op_profit = revenue - vc - sim_fc - sim_ad
+            sim_total_profit += op_profit
+            sim_cash += op_profit
+        return {"final_profit": op_profit, "total_profit": sim_total_profit,
+                "final_mau": int(sim_active), "final_cash": sim_cash,
+                "ltv_cac": (sim_price / sim_churn if sim_churn > 0 else sim_price * 120) / sim_cpa if sim_cpa > 0 else 999}
 
-        # 各レバーのインパクト計算
-        for lv in levers:
-            result = quick_kpi(**lv["params"])
-            if gn_goal_type in ["月次黒字化", "年次黒字化（3年以内）"]:
-                lv["impact"] = result["total_profit"] - base["total_profit"]
-                lv["impact_label"] = f"累積利益 {'+' if lv['impact'] >= 0 else ''}{lv['impact']:,.0f}円"
-            elif gn_goal_type == "MAU目標達成":
-                lv["impact"] = result["final_mau"] - base["final_mau"]
-                lv["impact_label"] = f"MAU {'+' if lv['impact'] >= 0 else ''}{lv['impact']:,}"
-            elif gn_goal_type == "Runway維持（18ヶ月）":
-                lv["impact"] = result["final_cash"] - base["final_cash"]
-                lv["impact_label"] = f"キャッシュ {'+' if lv['impact'] >= 0 else ''}¥{lv['impact']:,.0f}"
-            else:
-                lv["impact"] = result["ltv_cac"] - base["ltv_cac"]
-                lv["impact_label"] = f"LTV/CAC {'+' if lv['impact'] >= 0 else ''}{lv['impact']:.2f}"
+    base = quick_kpi()
+    levers = [
+        {"name": "単価 +10%",       "key": "unit_price",       "params": {"price_mult": 1.1},   "direction": "↑ 単価を上げる"},
+        {"name": "CPA -10%",         "key": "cpa",             "params": {"cpa_mult": 0.9},     "direction": "↓ 獲得コストを下げる"},
+        {"name": "解約率 -10%",      "key": "churn_rate",      "params": {"churn_mult": 0.9},   "direction": "↓ 解約を減らす"},
+        {"name": "オーガニック +10%", "key": "organic_start",   "params": {"organic_mult": 1.1}, "direction": "↑ 自然流入を増やす"},
+        {"name": "固定費 -10%",      "key": "fc_total",        "params": {"fc_mult": 0.9},      "direction": "↓ 固定費を削る"},
+        {"name": "広告費 +10%",      "key": "ad_budget",       "params": {"ad_mult": 1.1},      "direction": "↑ 広告投資を増やす"},
+    ]
 
-        levers_sorted = sorted(levers, key=lambda x: abs(x["impact"]), reverse=True)
+    # 各レバーのインパクト計算
+    for lv in levers:
+        result = quick_kpi(**lv["params"])
+        if gn_goal_type in ["月次黒字化", "年次黒字化（3年以内）"]:
+            lv["impact"] = result["total_profit"] - base["total_profit"]
+            lv["impact_label"] = f"累積利益 {'+' if lv['impact'] >= 0 else ''}{lv['impact']:,.0f}円"
+        elif gn_goal_type == "MAU目標達成":
+            lv["impact"] = result["final_mau"] - base["final_mau"]
+            lv["impact_label"] = f"MAU {'+' if lv['impact'] >= 0 else ''}{lv['impact']:,}"
+        elif gn_goal_type == "Runway維持（18ヶ月）":
+            lv["impact"] = result["final_cash"] - base["final_cash"]
+            lv["impact_label"] = f"キャッシュ {'+' if lv['impact'] >= 0 else ''}¥{lv['impact']:,.0f}"
+        else:
+            lv["impact"] = result["ltv_cac"] - base["ltv_cac"]
+            lv["impact_label"] = f"LTV/CAC {'+' if lv['impact'] >= 0 else ''}{lv['impact']:.2f}"
 
-        for rank, lv in enumerate(levers_sorted, 1):
-            impact_color = "#4ade80" if lv["impact"] > 0 else "#f87171" if lv["impact"] < 0 else "#a0b0c8"
-            lc1, lc2, lc3 = st.columns([5, 3, 2])
-            with lc1:
-                st.markdown(f"""<div class="gn-lever-row">
-                    <div class="lever-rank">#{rank}</div>
-                    <div><div class="lever-name">{lv['name']}</div>
-                    <div class="lever-current">{lv['direction']}</div></div>
-                </div>""", unsafe_allow_html=True)
-            with lc2:
-                st.markdown(f'<div style="padding:14px 0;"><span style="color:{impact_color};font-weight:700;font-size:0.9rem;">{lv["impact_label"]}</span></div>', unsafe_allow_html=True)
-            with lc3:
-                apply_key = f"gn_apply_{lv['key']}"
-                if st.button("適用", key=apply_key, help=f"{lv['name']} をサイドバーに反映"):
-                    if lv["key"] == "unit_price":
-                        for _ri in range(st.session_state.get("n_revenue", 1)):
-                            _k = f"rprice_{_ri}"
-                            if _k in st.session_state:
-                                st.session_state[_k] = int(st.session_state[_k] * 1.1)
-                    elif lv["key"] == "cpa":
-                        if "cpa" in st.session_state:
-                            st.session_state["cpa"] = int(st.session_state["cpa"] * 0.9)
-                    elif lv["key"] == "churn_rate":
-                        for _ri in range(st.session_state.get("n_revenue", 1)):
-                            _k = f"rchurn_{_ri}"
-                            if _k in st.session_state:
-                                st.session_state[_k] = round(float(st.session_state[_k]) * 0.9, 2)
-                    elif lv["key"] == "organic_start":
-                        if "organic_start" in st.session_state:
-                            st.session_state["organic_start"] = int(st.session_state["organic_start"] * 1.1)
-                    elif lv["key"] == "fc_total":
-                        for fc_name in selected_fc_items:
-                            fc_k = FIXED_COST_ITEMS[fc_name]["key"]
-                            if fc_k in st.session_state:
-                                st.session_state[fc_k] = int(st.session_state[fc_k] * 0.9)
-                    elif lv["key"] == "ad_budget":
-                        if "ad_budget_input" in st.session_state:
-                            st.session_state["ad_budget_input"] = int(st.session_state["ad_budget_input"] * 1.1)
-                    st.rerun()
+    levers_sorted = sorted(levers, key=lambda x: abs(x["impact"]), reverse=True)
+
+    for rank, lv in enumerate(levers_sorted, 1):
+        impact_color = "#4ade80" if lv["impact"] > 0 else "#f87171" if lv["impact"] < 0 else "#a0b0c8"
+        lc1, lc2, lc3 = st.columns([5, 3, 2])
+        with lc1:
+            st.markdown(f"""<div class="gn-lever-row">
+                <div class="lever-rank">#{rank}</div>
+                <div><div class="lever-name">{lv['name']}</div>
+                <div class="lever-current">{lv['direction']}</div></div>
+            </div>""", unsafe_allow_html=True)
+        with lc2:
+            st.markdown(f'<div style="padding:14px 0;"><span style="color:{impact_color};font-weight:700;font-size:0.9rem;">{lv["impact_label"]}</span></div>', unsafe_allow_html=True)
+        with lc3:
+            apply_key = f"gn_apply_{lv['key']}"
+            if st.button("✅ 適用", key=apply_key, help=f"{lv['name']} をサイドバーに反映", type="primary"):
+                if lv["key"] == "unit_price":
+                    for _ri in range(st.session_state.get("n_revenue", 1)):
+                        _k = f"rprice_{_ri}"
+                        if _k in st.session_state:
+                            st.session_state[_k] = int(st.session_state[_k] * 1.1)
+                elif lv["key"] == "cpa":
+                    if "cpa" in st.session_state:
+                        st.session_state["cpa"] = int(st.session_state["cpa"] * 0.9)
+                elif lv["key"] == "churn_rate":
+                    for _ri in range(st.session_state.get("n_revenue", 1)):
+                        _k = f"rchurn_{_ri}"
+                        if _k in st.session_state:
+                            st.session_state[_k] = round(float(st.session_state[_k]) * 0.9, 2)
+                elif lv["key"] == "organic_start":
+                    if "organic_start" in st.session_state:
+                        st.session_state["organic_start"] = int(st.session_state["organic_start"] * 1.1)
+                elif lv["key"] == "fc_total":
+                    for fc_name in selected_fc_items:
+                        fc_k = FIXED_COST_ITEMS[fc_name]["key"]
+                        if fc_k in st.session_state:
+                            st.session_state[fc_k] = int(st.session_state[fc_k] * 0.9)
+                elif lv["key"] == "ad_budget":
+                    if "ad_budget_input" in st.session_state:
+                        st.session_state["ad_budget_input"] = int(st.session_state["ad_budget_input"] * 1.1)
+                st.rerun()
 
         # ── 複合効果 ──
         st.markdown('<div class="gn-section-header">🔗 複合効果シミュレーション</div>', unsafe_allow_html=True)
